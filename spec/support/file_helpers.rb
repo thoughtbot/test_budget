@@ -20,17 +20,22 @@ module FileHelpers
     )
   end
 
-  def write_budget_file(data)
-    file = Tempfile.new([".test_budget", ".yml"])
-    file.write(data.to_yaml)
-    file.close
-    file.path
+  def write_budget_file(data, &block)
+    with_tempfile([".test_budget", ".yml"], data.to_yaml, &block)
   end
 
-  def write_results_file(examples)
-    file = Tempfile.new(["rspec_results", ".json"])
-    file.write(JSON.generate("examples" => examples))
-    file.close
-    file.path
+  def write_results_file(examples, &block)
+    with_tempfile(["rspec_results", ".json"], JSON.generate("examples" => examples), &block)
+  end
+
+  private
+
+  def with_tempfile(name, content)
+    file = Tempfile.create(name)
+    file.write(content)
+    file.flush
+    yield file.path
+  ensure
+    file&.close
   end
 end
