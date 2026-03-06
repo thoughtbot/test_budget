@@ -17,6 +17,7 @@ module TestBudget
       case parsed[:command]
       in "audit" then run_audit(args)
       in "allowlist" then run_allowlist(args)
+      in "init" then run_init(args)
       end
     rescue ArgumentParser::ParseError, TestBudget::Error, OptionParser::MissingArgument => e
       @error.puts e.message
@@ -27,7 +28,7 @@ module TestBudget
 
     def command_parser
       ArgumentParser.build do
-        required :command, pattern: %w[audit allowlist]
+        required :command, pattern: %w[audit allowlist init]
       end
     end
 
@@ -60,6 +61,20 @@ module TestBudget
 
       entry = Budget.load(budget_path).add_to_allowlist(locator, reason: reason)
       @output.puts "Allowlisted: #{entry.test_case_key}"
+
+      0
+    end
+
+    def run_init(args)
+      force = false
+
+      OptionParser.new do |opts|
+        opts.banner = "Usage: test_budget init [results_file] [options]"
+        opts.on("--force", "Overwrite existing config") { force = true }
+      end.parse!(args)
+      results_path = args.shift
+
+      Onboarding.new(results_path: results_path, output: @output, force: force).start
 
       0
     end

@@ -11,6 +11,8 @@ require_relative "test_budget/auditor"
 require_relative "test_budget/reporter"
 require_relative "test_budget/parser/rspec"
 require_relative "test_budget/audit"
+require_relative "test_budget/statistics"
+require_relative "test_budget/onboarding"
 require_relative "test_budget/cli"
 
 module TestBudget

@@ -47,6 +47,10 @@ module TestBudget
       suite.max_duration || per_test_case.default || per_test_case.types.any?
     end
 
+    def save
+      File.write(path, YAML.dump(to_h))
+    end
+
     private
 
     def to_h
@@ -68,10 +72,6 @@ module TestBudget
         next if value.respond_to?(:empty?) && value.empty?
         result[key] = value
       end
-    end
-
-    def save
-      File.write(path, YAML.dump(to_h))
     end
   end
 end

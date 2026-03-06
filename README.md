@@ -20,9 +20,46 @@ Add to your Gemfile:
 gem "test_budget"
 ```
 
+## Generate RSpec JSON output
+
+> [!TIP]
+> You can skip this step and run `test_budget init` without a results file to
+> get started with sensible defaults right away.
+
+Add to your RSpec configuration or CI command:
+
+```bash
+bundle exec rspec --format json --out tmp/rspec_results.json
+```
+
+Or combine with your usual formatter:
+
+```bash
+bundle exec rspec --format progress --format json --out tmp/rspec_results.json
+```
+
+## Quick start
+
+Generate a starter config from an existing RSpec JSON results file:
+
+```bash
+bundle exec test_budget init tmp/rspec_results.json
+```
+
+This derives suite and per-test-case budgets from your actual test data (95th
+percentile + 10% buffer). If you don't have a results file yet, run without
+arguments to generate a config with sensible defaults:
+
+```bash
+bundle exec test_budget init
+```
+
+Use `--force` to overwrite an existing `.test_budget.yml`.
+
 ## Configure
 
-Create a `.test_budget.yml` in your project root:
+The `init` command creates a `.test_budget.yml` in your project root. You can
+also create one manually:
 
 ```yaml
 results_path: tmp/rspec_results.json
@@ -48,20 +85,6 @@ allowlist:
 - **`allowlist`** — known slow tests to skip. Use this as a temporary escape hatch, not a permanent solution.
 
 At least one limit (`suite.max_duration`, `per_test_case.default`, or a type-specific limit) must be configured.
-
-## Generate RSpec JSON output
-
-Add to your RSpec configuration or CI command:
-
-```bash
-bundle exec rspec --format json --out tmp/rspec_results.json
-```
-
-Or combine with your usual formatter:
-
-```bash
-bundle exec rspec --format progress --format json --out tmp/rspec_results.json
-```
 
 ## Run
 

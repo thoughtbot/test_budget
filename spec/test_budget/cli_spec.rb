@@ -133,4 +133,60 @@ RSpec.describe TestBudget::CLI do
       end
     end
   end
+
+  describe "init subcommand" do
+    around do |example|
+      Dir.mktmpdir do |dir|
+        Dir.chdir(dir) { example.run }
+      end
+    end
+
+    it "generates config from custom results path" do
+      write_results_file([
+        {"file_path" => "spec/models/user_spec.rb", "full_description" => "User is valid", "run_time" => 1.0, "status" => "passed", "line_number" => 4}
+      ]) do |rspec_path|
+        exit_code = cli.call(["init", rspec_path])
+
+        expect(exit_code).to eq(0)
+        config = YAML.safe_load_file(".test_budget.yml")
+        expect(config["results_path"]).to eq(rspec_path)
+        expect(config["suite"]["max_duration"]).to be_a(Integer)
+      end
+    end
+
+    it "uses no-input mode when default path doesn't exist" do
+      exit_code = cli.call(["init"])
+
+      expect(exit_code).to eq(0)
+      config = YAML.safe_load_file(".test_budget.yml")
+      expect(config["results_path"]).to eq("tmp/test_budget_results.json")
+      expect(config).not_to have_key("suite")
+    end
+
+    it "passes --force flag" do
+      File.write(".test_budget.yml", "existing: config")
+
+      exit_code = cli.call(["init", "--force"])
+
+      expect(exit_code).to eq(0)
+      config = YAML.safe_load_file(".test_budget.yml")
+      expect(config["per_test_case"]["default"]).to eq(3)
+    end
+
+    it "returns 1 when explicit results file doesn't exist" do
+      exit_code = cli.call(["init", "nonexistent.json"])
+
+      expect(exit_code).to eq(1)
+      expect(error.string).to include("not found")
+    end
+
+    it "returns 1 when config exists without --force" do
+      File.write(".test_budget.yml", "existing: config")
+
+      exit_code = cli.call(["init"])
+
+      expect(exit_code).to eq(1)
+      expect(error.string).to include("--force")
+    end
+  end
 end
