@@ -9,13 +9,13 @@ Gem::Specification.new do |spec|
   spec.email = ["matheusrichardt@gmail.com"]
 
   spec.summary = "You have a time budget for tests. This gem enforces it."
-  spec.description = spec.summary
-  # spec.homepage = "TODO: Put your gem's website or public repo URL here."
+  spec.description = "Set a time budget for your tests (and your whole suite) and have it automatically enforced in CI. No more slow tests sneaking into your suite!"
+  spec.homepage = "https://github.com/thoughtbot/test_budget"
   spec.license = "MIT"
   spec.required_ruby_version = ">= 3.2.0"
 
   # spec.metadata["allowed_push_host"] = "TODO: Set to your gem server 'https://example.com'"
-  # spec.metadata["homepage_uri"] = spec.homepage
+  spec.metadata["homepage_uri"] = spec.homepage
   # spec.metadata["source_code_uri"] = "TODO: Put your gem's public repo URL here."
   # spec.metadata["changelog_uri"] = "TODO: Put your gem's CHANGELOG.md URL here."
 

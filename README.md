@@ -1,39 +1,151 @@
-# TestBudget
+# Test Budget
 
-TODO: Delete this and the text below, and describe your gem
+> You have a time budget for tests. This tool enforces it.
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/test_budget`. To experiment with that code, run `bin/console` for an interactive prompt.
+Test suites get slow one test at a time. By the time you notice, your CI takes
+40 minutes and nobody wants to touch it.
 
-## Installation
+Test Budget is a post-run audit tool. It reads your test results, checks
+durations against your set budget, and fails if anything is over. Think of it as
+**a linter for test performance**.
 
-TODO: Replace `UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG` with your gem name right after releasing it to RubyGems.org. Please do not do it earlier due to security reasons. Alternatively, replace this section with instructions to install your gem from git if you don't plan to release to RubyGems.org.
+It doesn't change how your tests run. It just tells you when they're too slow.
+Before it gets worse.
 
-Install the gem and add to the application's Gemfile by executing:
+## Install
 
-```bash
-bundle add UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
+Add to your Gemfile:
+
+```ruby
+gem "test_budget"
 ```
 
-If bundler is not being used to manage dependencies, install the gem by executing:
+## Configure
 
-```bash
-gem install UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
+Create a `.test_budget.yml` in your project root:
+
+```yaml
+results_path: tmp/rspec_results.json
+
+suite:
+  max_duration: 300 # seconds
+
+per_test_case:
+  default: 2
+  by_type:
+    system: 6
+    request: 3
+    model: 1.5
+
+allowlist:
+  - "spec/system/checkout_spec.rb -- Checkout completes purchase"
 ```
 
-## Usage
+- **`results_path`** (required) — path to the RSpec JSON output file.
+- **`suite.max_duration`** — total duration budget for the entire suite.
+- **`per_test_case.default`** — default per-test limit. Applies to any type not listed in `by_type`.
+- **`per_test_case.by_type`** — per-test limits by type. Types are inferred from file paths (`spec/models/` -> `model`, `spec/system/` -> `system`, etc).
+- **`allowlist`** — known slow tests to skip. Use this as a temporary escape hatch, not a permanent solution.
 
-TODO: Write usage instructions here
+At least one limit (`suite.max_duration`, `per_test_case.default`, or `per_test_case.by_type`) must be configured.
 
-## Development
+## Generate RSpec JSON output
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+Add to your RSpec configuration or CI command:
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and the created tag, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+```bash
+bundle exec rspec --format json --out tmp/rspec_results.json
+```
 
-## Contributing
+Or combine with your usual formatter:
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/test_budget.
+```bash
+bundle exec rspec --format progress --format json --out tmp/rspec_results.json
+```
+
+## Run
+
+```bash
+bundle exec test_budget audit
+```
+
+Use `--budget` to point to a different config file:
+
+```bash
+bundle exec test_budget audit --budget config/test_budget.yml
+```
+
+Exit code is `0` when all tests are within budget, `1` when there are violations.
+
+### Example output
+
+```
+Test budget: 2 violation(s) found
+
+  1) spec/models/user_spec.rb -- User#full_name (2.50s) exceeds model limit (1.00s)
+     To allowlist, add to .test_budget.yml:
+     - "spec/models/user_spec.rb -- User#full_name"
+
+  2) Suite total (650.00s) exceeds limit (600.00s)
+```
+
+## CI integration
+
+Run the audit after your test suite:
+
+```yaml
+# .github/workflows/ci.yml
+- run: bundle exec rspec --format progress --format json --out tmp/rspec_results.json
+- run: bundle exec test_budget audit
+```
+
+The second step fails the build if any test exceeds its budget.
+
+## I have violations. Now what?
+
+A violation means a test is slower than you decided it should be. You have
+options:
+
+- **Make the test faster.** This is the best option. Look for unnecessary setup,
+  N+1 queries, slow external calls that could be stubbed. Can the same behavior
+  be exercised with a faster test type? (e.g. request -> model)
+- **Split the work.** A system test doing too much can often be broken into
+  focused scenarios.
+- **Parallelize.** Tools like `parallel_tests` reduce wall time without changing
+  individual test durations, but consider also setting per-test budgets to keep
+  individual tests honest.
+- **Upgrade infrastructure.** Faster CI (or developer) machines buy time.
+- **Allowlist temporarily.** If a fix isn't immediate, add the test to the
+  allowlist and create a ticket. This keeps the budget enforced for everything
+  else.
+
+The goal isn't zero violations on day one. It's to stop the bleeding and make
+test performance visible.
 
 ## License
 
-The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
+The gem is available as open source under the terms of the [MIT
+License](https://opensource.org/licenses/MIT).
+
+## Code of Conduct
+
+Everyone interacting in the Test Budget project's codebases, issue trackers,
+chat rooms and mailing lists is expected to follow the [code of
+conduct](https://github.com/thoughtbot/test_budget/blob/main/CODE_OF_CONDUCT.md).
+
+<!-- START /templates/footer.md -->
+
+## About thoughtbot
+
+![thoughtbot](https://thoughtbot.com/thoughtbot-logo-for-readmes.svg)
+
+This repo is maintained and funded by thoughtbot, inc. The names and logos for
+thoughtbot are trademarks of thoughtbot, inc.
+
+We love open source software! See [our other projects][community]. We are
+[available for hire][hire].
+
+[community]: https://thoughtbot.com/community?utm_source=github&utm_medium=readme&utm_campaign=test_budget
+[hire]: https://thoughtbot.com/hire-us?utm_source=github&utm_medium=readme&utm_campaign=test_budget
+
+<!-- END /templates/footer.md -->
