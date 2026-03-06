@@ -1,0 +1,4 @@
+results_path: tmp/rspec_results.json
+
+suite:
+  max_duration: 1
