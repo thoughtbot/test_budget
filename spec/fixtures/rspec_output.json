@@ -1,0 +1,36 @@
+{
+  "version": "3.12.0",
+  "summary_line": "3 examples, 0 failures",
+  "examples": [
+    {
+      "id": "./spec/models/user_spec.rb[1:1]",
+      "description": "is valid",
+      "full_description": "User is valid",
+      "status": "passed",
+      "file_path": "./spec/models/user_spec.rb",
+      "line_number": 4,
+      "run_time": 0.123,
+      "pending_message": null
+    },
+    {
+      "id": "./spec/system/login_spec.rb[1:1]",
+      "description": "logs in successfully",
+      "full_description": "Login logs in successfully",
+      "status": "passed",
+      "file_path": "./spec/system/login_spec.rb",
+      "line_number": 5,
+      "run_time": 12.456,
+      "pending_message": null
+    },
+    {
+      "id": "./spec/lib/utils_spec.rb[1:1]",
+      "description": "parses input",
+      "full_description": "Utils parses input",
+      "status": "passed",
+      "file_path": "spec/lib/utils_spec.rb",
+      "line_number": 3,
+      "run_time": 0.001,
+      "pending_message": null
+    }
+  ]
+}
