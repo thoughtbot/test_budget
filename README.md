@@ -37,7 +37,8 @@ per_test_case:
   model: 1.5
 
 allowlist:
-  - "spec/system/checkout_spec.rb -- Checkout completes purchase"
+  - test_case: "spec/services/invoice_pdf_spec.rb -- generates PDF with line items"
+    reason: "PDF generation is inherently slow, tracking in JIRA-1234"
 ```
 
 - **`results_path`** (required) — path to the RSpec JSON output file.
