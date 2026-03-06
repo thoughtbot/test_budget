@@ -2,7 +2,7 @@
 
 RSpec.describe TestBudget::Checks::PerTestCase do
   let(:budget) do
-    build_budget(per_test_case: {default: 5, by_type: {model: 2}})
+    build_budget(per_test_case: {default: 5, types: {model: 2}})
   end
   let(:check) { described_class.new(budget) }
 

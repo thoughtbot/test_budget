@@ -5,13 +5,13 @@ require "yaml"
 module TestBudget
   class Budget < Data.define(:path, :results_path, :suite, :per_test_case, :allowlist)
     Suite = Data.define(:max_duration)
-    PerTestCase = Data.define(:default, :by_type)
+    PerTestCase = Data.define(:default, :types)
 
     def self.load(path)
       config = YAML.safe_load_file(path) || {}
       suite_config = config.fetch("suite", {}) || {}
       per_test_case_config = config.fetch("per_test_case", {}) || {}
-      by_type = (per_test_case_config["by_type"] || {}).transform_keys(&:to_sym)
+      types = per_test_case_config.except("default").transform_keys(&:to_sym)
 
       budget = new(
         path: path,
@@ -19,7 +19,7 @@ module TestBudget
         suite: Suite.new(max_duration: suite_config["max_duration"]),
         per_test_case: PerTestCase.new(
           default: per_test_case_config["default"],
-          by_type: by_type
+          types: types
         ),
         allowlist: Allowlist.new(config.fetch("allowlist", []))
       )
@@ -44,7 +44,7 @@ module TestBudget
     end
 
     def limits_set?
-      suite.max_duration || per_test_case.default || per_test_case.by_type.any?
+      suite.max_duration || per_test_case.default || per_test_case.types.any?
     end
 
     private
@@ -55,7 +55,7 @@ module TestBudget
         "suite" => {"max_duration" => suite.max_duration},
         "per_test_case" => {
           "default" => per_test_case.default,
-          "by_type" => per_test_case.by_type.transform_keys(&:to_s)
+          **per_test_case.types.transform_keys(&:to_s)
         },
         "allowlist" => allowlist.to_a.map(&:to_h)
       )

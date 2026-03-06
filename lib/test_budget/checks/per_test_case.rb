@@ -8,7 +8,7 @@ module TestBudget
       end
 
       def check(test_case)
-        limit = @budget.per_test_case.by_type[test_case.type] || @budget.per_test_case.default
+        limit = @budget.per_test_case.types[test_case.type] || @budget.per_test_case.default
 
         return unless limit
         return if test_case.duration <= limit

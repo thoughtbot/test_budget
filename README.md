@@ -32,10 +32,9 @@ suite:
 
 per_test_case:
   default: 2
-  by_type:
-    system: 6
-    request: 3
-    model: 1.5
+  system: 6
+  request: 3
+  model: 1.5
 
 allowlist:
   - "spec/system/checkout_spec.rb -- Checkout completes purchase"
@@ -43,11 +42,11 @@ allowlist:
 
 - **`results_path`** (required) — path to the RSpec JSON output file.
 - **`suite.max_duration`** — total duration budget for the entire suite.
-- **`per_test_case.default`** — default per-test limit. Applies to any type not listed in `by_type`.
-- **`per_test_case.by_type`** — per-test limits by type. Types are inferred from file paths (`spec/models/` -> `model`, `spec/system/` -> `system`, etc).
+- **`per_test_case.default`** — default per-test limit. Applies to any type without a specific limit.
+- **`per_test_case.<type>`** — per-test limit for a specific type. Types are inferred from file paths by singularizing the directory name (`spec/models/` -> `model`, `spec/features/` -> `feature`, `spec/system/` -> `system`, etc).
 - **`allowlist`** — known slow tests to skip. Use this as a temporary escape hatch, not a permanent solution.
 
-At least one limit (`suite.max_duration`, `per_test_case.default`, or `per_test_case.by_type`) must be configured.
+At least one limit (`suite.max_duration`, `per_test_case.default`, or a type-specific limit) must be configured.
 
 ## Generate RSpec JSON output
 
