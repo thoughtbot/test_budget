@@ -21,8 +21,6 @@ module TestBudget
           @output.puts "     To allowlist, add to .test_budget.yml:"
           @output.puts "     #{snippet}"
         end
-
-        @output.puts
       end
     end
   end
