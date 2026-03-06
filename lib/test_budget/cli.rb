@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "optparse"
+require "argument_parser"
 
 module TestBudget
   class CLI
@@ -11,23 +12,30 @@ module TestBudget
 
     def call(argv)
       args = argv.dup
+      parsed = command_parser.parse!(args)
 
-      case args.shift
+      case parsed[:command]
+      when "audit" then run_audit(args)
       when "allowlist" then run_allowlist(args)
-      else run_audit(args)
       end
-    rescue TestBudget::Error, OptionParser::MissingArgument => e
+    rescue ArgumentParser::ParseError, TestBudget::Error, OptionParser::MissingArgument => e
       @error.puts e.message
       1
     end
 
     private
 
+    def command_parser
+      ArgumentParser.build do
+        required :command, pattern: %w[audit allowlist]
+      end
+    end
+
     def run_audit(args)
       budget_path = DEFAULT_BUDGET_PATH
 
       OptionParser.new do |opts|
-        opts.banner = "Usage: test_budget [audit] [options]"
+        opts.banner = "Usage: test_budget audit [options]"
         opts.on("--budget PATH", "Path to budget file") { |path| budget_path = path }
       end.parse!(args)
 

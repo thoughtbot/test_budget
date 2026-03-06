@@ -2,10 +2,12 @@ PATH
   remote: .
   specs:
     test_budget (0.0.0)
+      argument_parser (~> 0.1)
 
 GEM
   remote: https://rubygems.org/
   specs:
+    argument_parser (0.1.3)
     ast (2.4.3)
     date (3.5.1)
     diff-lcs (1.6.2)
@@ -103,6 +105,7 @@ DEPENDENCIES
   test_budget!
 
 CHECKSUMS
+  argument_parser (0.1.3) sha256=616ec4bc896ad2655b4d5a2bdc9c85ac9ae26ab004616c39b6817c7f8d127805
   ast (2.4.3) sha256=954615157c1d6a382bc27d690d973195e79db7f55e9765ac7c481c60bdb4d383
   date (3.5.1) sha256=750d06384d7b9c15d562c76291407d89e368dda4d4fff957eb94962d325a0dc0
   diff-lcs (1.6.2) sha256=9ae0d2cba7d4df3075fe8cd8602a8604993efc0dfa934cff568969efb1909962

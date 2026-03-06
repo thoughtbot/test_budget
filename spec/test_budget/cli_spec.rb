@@ -45,20 +45,11 @@ RSpec.describe TestBudget::CLI do
     end
   end
 
-  it "defaults to audit subcommand" do
-    write_results_file([
-      {
-        "file_path" => "spec/models/user_spec.rb",
-        "full_description" => "User is valid",
-        "run_time" => 1.0, "status" => "passed"
-      }
-    ]) do |rspec_path|
-      write_budget_file("results_path" => rspec_path, "per_test_case" => {"default" => 5}) do |budget_path|
-        exit_code = cli.call(["--budget", budget_path])
+  it "returns 1 for unknown command" do
+    exit_code = cli.call(["unknown"])
 
-        expect(exit_code).to eq(0)
-      end
-    end
+    expect(exit_code).to eq(1)
+    expect(error.string).to include("invalid argument")
   end
 
   it "reports errors to stderr and returns 1" do
