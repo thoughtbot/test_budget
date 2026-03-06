@@ -25,7 +25,7 @@ RSpec.describe TestBudget::Violation do
     it "formats suite violation message" do
       violation = described_class.new(test_case: nil, duration: 650.0, limit: 600.0, kind: :suite)
 
-      expect(violation.message).to eq("Suite total (650.00s) exceeds limit (600.00s)")
+      expect(violation.message).to eq("Suite total time (650.00s) exceeds limit (600.00s)")
     end
   end
 
