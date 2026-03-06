@@ -84,7 +84,8 @@ allowlist:
 - **`per_test_case.<type>`** — per-test limit for a specific type. Types are inferred from file paths by singularizing the directory name (`spec/models/` -> `model`, `spec/features/` -> `feature`, `spec/system/` -> `system`, etc).
 - **`allowlist`** — known slow tests to skip. Use this as a temporary escape hatch, not a permanent solution.
 
-At least one limit (`suite.max_duration`, `per_test_case.default`, or a type-specific limit) must be configured.
+> [!IMPORTANT]
+> At least one limit (`suite.max_duration`, `per_test_case.default`, or a type-specific limit) must be configured.
 
 ## Run
 
