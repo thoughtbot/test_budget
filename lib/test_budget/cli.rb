@@ -15,8 +15,8 @@ module TestBudget
       parsed = command_parser.parse!(args)
 
       case parsed[:command]
-      when "audit" then run_audit(args)
-      when "allowlist" then run_allowlist(args)
+      in "audit" then run_audit(args)
+      in "allowlist" then run_allowlist(args)
       end
     rescue ArgumentParser::ParseError, TestBudget::Error, OptionParser::MissingArgument => e
       @error.puts e.message

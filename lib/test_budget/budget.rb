@@ -64,7 +64,9 @@ module TestBudget
     def deep_compact_blank(hash)
       hash.each_with_object({}) do |(key, value), result|
         value = deep_compact_blank(value) if value.is_a?(Hash)
-        result[key] = value unless value.nil? || (value.respond_to?(:empty?) && value.empty?)
+        next if value.nil?
+        next if value.respond_to?(:empty?) && value.empty?
+        result[key] = value
       end
     end
 
