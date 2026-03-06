@@ -7,13 +7,16 @@ require "json"
 module FileHelpers
   def build_budget(per_test_case: nil, suite: nil, allowlist: [])
     TestBudget::Budget.new(
+      path: nil,
       results_path: nil,
       suite: TestBudget::Budget::Suite.new(max_duration: suite&.dig(:max_duration)),
       per_test_case: TestBudget::Budget::PerTestCase.new(
         default: per_test_case&.dig(:default),
         by_type: per_test_case&.dig(:by_type) || {}
       ),
-      allowlist: Set.new(allowlist)
+      allowlist: TestBudget::Allowlist.new(
+        allowlist.map { |key| {"test_case" => key, "reason" => "test"} }
+      )
     )
   end
 

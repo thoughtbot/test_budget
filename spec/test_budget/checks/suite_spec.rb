@@ -2,7 +2,7 @@
 
 RSpec.describe TestBudget::Checks::Suite do
   def make_test_case(duration:)
-    TestBudget::TestCase.new(file: "spec/models/user_spec.rb", name: "example", duration: duration, status: "passed")
+    TestBudget::TestCase.new(file: "spec/models/user_spec.rb", name: "example", duration: duration, status: "passed", line_number: 1)
   end
 
   it "returns nil when under budget" do

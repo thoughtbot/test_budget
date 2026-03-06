@@ -2,7 +2,7 @@
 
 RSpec.describe TestBudget::Auditor do
   def make_test_case(file: "spec/models/user_spec.rb", name: "example", duration: 1.0)
-    TestBudget::TestCase.new(file: file, name: name, duration: duration, status: "passed")
+    TestBudget::TestCase.new(file: file, name: name, duration: duration, status: "passed", line_number: 1)
   end
 
   it "returns per_test_case violations" do

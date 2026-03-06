@@ -3,7 +3,7 @@
 require "yaml"
 
 module TestBudget
-  class Budget < Data.define(:results_path, :suite, :per_test_case, :allowlist)
+  class Budget < Data.define(:path, :results_path, :suite, :per_test_case, :allowlist)
     Suite = Data.define(:max_duration)
     PerTestCase = Data.define(:default, :by_type)
 
@@ -14,13 +14,14 @@ module TestBudget
       by_type = (per_test_case_config["by_type"] || {}).transform_keys(&:to_sym)
 
       budget = new(
+        path: path,
         results_path: config["results_path"],
         suite: Suite.new(max_duration: suite_config["max_duration"]),
         per_test_case: PerTestCase.new(
           default: per_test_case_config["default"],
           by_type: by_type
         ),
-        allowlist: Set.new(config.fetch("allowlist", []))
+        allowlist: Allowlist.new(config.fetch("allowlist", []))
       )
 
       raise TestBudget::Error, "results_path is required in budget file" unless budget.results_path
@@ -32,11 +33,43 @@ module TestBudget
     end
 
     def allowed?(test_case)
-      allowlist.include?(test_case.key)
+      allowlist.allowed?(test_case.key)
+    end
+
+    def add_to_allowlist(locator, reason:)
+      test_cases = Parser::Rspec.parse(results_path)
+      test_case = TestCase.find_by_location!(test_cases, locator)
+
+      allowlist.add(test_case.key, reason: reason).tap { save }
     end
 
     def limits_set?
       suite.max_duration || per_test_case.default || per_test_case.by_type.any?
+    end
+
+    private
+
+    def to_h
+      deep_compact_blank(
+        "results_path" => results_path,
+        "suite" => {"max_duration" => suite.max_duration},
+        "per_test_case" => {
+          "default" => per_test_case.default,
+          "by_type" => per_test_case.by_type.transform_keys(&:to_s)
+        },
+        "allowlist" => allowlist.to_a.map(&:to_h)
+      )
+    end
+
+    def deep_compact_blank(hash)
+      hash.each_with_object({}) do |(key, value), result|
+        value = deep_compact_blank(value) if value.is_a?(Hash)
+        result[key] = value unless value.nil? || (value.respond_to?(:empty?) && value.empty?)
+      end
+    end
+
+    def save
+      File.write(path, YAML.dump(to_h))
     end
   end
 end

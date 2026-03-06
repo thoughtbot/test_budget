@@ -13,7 +13,8 @@ module TestBudget
             file: example["file_path"],
             name: example["full_description"],
             duration: example["run_time"],
-            status: example["status"]
+            status: example["status"],
+            line_number: example["line_number"]
           )
         end
       end

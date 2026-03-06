@@ -5,7 +5,7 @@ RSpec.describe TestBudget::Reporter do
   let(:reporter) { described_class.new(output: output) }
 
   def make_per_test_violation(file: "spec/models/user_spec.rb", name: "User#slow", duration: 2.5, limit: 2.0)
-    test_case = TestBudget::TestCase.new(file: file, name: name, duration: duration, status: "passed")
+    test_case = TestBudget::TestCase.new(file: file, name: name, duration: duration, status: "passed", line_number: 1)
     TestBudget::Violation.new(test_case: test_case, duration: duration, limit: limit, kind: :per_test_case)
   end
 
@@ -33,7 +33,7 @@ RSpec.describe TestBudget::Reporter do
 
   it "includes allowlist snippets for per_test_case violations" do
     reporter.report([make_per_test_violation])
-    expect(output.string).to include("- \"spec/models/user_spec.rb -- User#slow\"")
+    expect(output.string).to include("- test_case: \"spec/models/user_spec.rb -- User#slow\"")
   end
 
   it "handles mixed violation types" do

@@ -5,7 +5,7 @@ RSpec.describe TestBudget::Violation do
     it "formats per_test_case violation message" do
       test_case = TestBudget::TestCase.new(
         file: "spec/models/user_spec.rb", name: "User#full_name",
-        duration: 2.5, status: "passed"
+        duration: 2.5, status: "passed", line_number: 4
       )
       violation = described_class.new(test_case: test_case, duration: 2.5, limit: 2.0, kind: :per_test_case)
 
@@ -15,7 +15,7 @@ RSpec.describe TestBudget::Violation do
     it "formats per_test_case violation message with inferred type" do
       test_case = TestBudget::TestCase.new(
         file: "spec/lib/utils_spec.rb", name: "Utils.parse",
-        duration: 6.0, status: "passed"
+        duration: 6.0, status: "passed", line_number: 4
       )
       violation = described_class.new(test_case: test_case, duration: 6.0, limit: 5.0, kind: :per_test_case)
 
@@ -33,7 +33,7 @@ RSpec.describe TestBudget::Violation do
     it "returns YAML snippet for per_test_case violations" do
       test_case = TestBudget::TestCase.new(
         file: "spec/models/user_spec.rb", name: "User#full_name",
-        duration: 2.5, status: "passed"
+        duration: 2.5, status: "passed", line_number: 4
       )
       violation = described_class.new(
         test_case: test_case, duration: 2.5,
@@ -41,7 +41,7 @@ RSpec.describe TestBudget::Violation do
       )
 
       expect(violation.allowlist_snippet).to eq(
-        "- \"spec/models/user_spec.rb -- User#full_name\""
+        "- test_case: \"spec/models/user_spec.rb -- User#full_name\""
       )
     end
 

@@ -14,18 +14,18 @@ RSpec.describe TestBudget::TestCase do
       "spec/features/sign_in_spec.rb" => :feature
     }.each do |file, expected_type|
       it "returns #{expected_type.inspect} for #{file}" do
-        test_case = described_class.new(file: file, name: "example", duration: 1.0, status: "passed")
+        test_case = described_class.new(file: file, name: "example", duration: 1.0, status: "passed", line_number: 1)
         expect(test_case.type).to eq(expected_type)
       end
     end
 
     it "infers type from any spec subdirectory" do
-      test_case = described_class.new(file: "spec/lib/utils_spec.rb", name: "example", duration: 1.0, status: "passed")
+      test_case = described_class.new(file: "spec/lib/utils_spec.rb", name: "example", duration: 1.0, status: "passed", line_number: 1)
       expect(test_case.type).to eq(:lib)
     end
 
     it "returns :default for files not under spec/" do
-      test_case = described_class.new(file: "test/something_test.rb", name: "example", duration: 1.0, status: "passed")
+      test_case = described_class.new(file: "test/something_test.rb", name: "example", duration: 1.0, status: "passed", line_number: 1)
       expect(test_case.type).to eq(:default)
     end
   end
@@ -34,9 +34,46 @@ RSpec.describe TestBudget::TestCase do
     it "returns file and name joined by --" do
       test_case = described_class.new(
         file: "spec/models/user_spec.rb", name: "User#full_name",
-        duration: 1.0, status: "passed"
+        duration: 1.0, status: "passed", line_number: 1
       )
       expect(test_case.key).to eq("spec/models/user_spec.rb -- User#full_name")
+    end
+  end
+
+  describe "#line_number" do
+    it "stores line_number" do
+      test_case = described_class.new(
+        file: "spec/models/user_spec.rb", name: "example",
+        duration: 1.0, status: "passed", line_number: 4
+      )
+      expect(test_case.line_number).to eq(4)
+    end
+  end
+
+  describe ".find_by_location!" do
+    let(:test_cases) do
+      [
+        described_class.new(file: "spec/models/user_spec.rb", name: "User is valid", duration: 1.0, status: "passed", line_number: 4),
+        described_class.new(file: "spec/models/user_spec.rb", name: "User has name", duration: 1.0, status: "passed", line_number: 10)
+      ]
+    end
+
+    it "finds test case by exact file and line" do
+      result = described_class.find_by_location!(test_cases, "spec/models/user_spec.rb:4")
+
+      expect(result.name).to eq("User is valid")
+    end
+
+    it "raises Error when no exact match" do
+      expect {
+        described_class.find_by_location!(test_cases, "spec/models/user_spec.rb:6")
+      }.to raise_error(TestBudget::Error, /No test case found at/)
+    end
+
+    it "raises Error when locator has no line number" do
+      expect {
+        described_class.find_by_location!(test_cases, "spec/models/user_spec.rb")
+      }.to raise_error(TestBudget::Error, /line number required/i)
     end
   end
 
@@ -44,7 +81,7 @@ RSpec.describe TestBudget::TestCase do
     it "strips leading ./ from file" do
       test_case = described_class.new(
         file: "./spec/models/user_spec.rb", name: "example",
-        duration: 1.0, status: "passed"
+        duration: 1.0, status: "passed", line_number: 1
       )
       expect(test_case.file).to eq("spec/models/user_spec.rb")
     end

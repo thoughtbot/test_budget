@@ -10,8 +10,21 @@ module TestBudget
     end
 
     def call(argv)
-      budget_path = DEFAULT_BUDGET_PATH
       args = argv.dup
+
+      case args.shift
+      when "allowlist" then run_allowlist(args)
+      else run_audit(args)
+      end
+    rescue TestBudget::Error, OptionParser::MissingArgument => e
+      @error.puts e.message
+      1
+    end
+
+    private
+
+    def run_audit(args)
+      budget_path = DEFAULT_BUDGET_PATH
 
       OptionParser.new do |opts|
         opts.banner = "Usage: test_budget [audit] [options]"
@@ -19,10 +32,28 @@ module TestBudget
       end.parse!(args)
 
       passed = Audit.new(budget_path: budget_path, output: @output).perform
+
       passed ? 0 : 1
-    rescue TestBudget::Error => e
-      @error.puts e.message
-      1
+    end
+
+    def run_allowlist(args)
+      budget_path = DEFAULT_BUDGET_PATH
+      reason = nil
+
+      OptionParser.new do |opts|
+        opts.banner = "Usage: test_budget allowlist FILE:LINE --reason REASON [options]"
+        opts.on("--budget PATH", "Path to budget file") { |path| budget_path = path }
+        opts.on("--reason REASON", "Reason for allowlisting") { |r| reason = r }
+      end.parse!(args)
+
+      locator = args.shift
+      raise Error, "--reason is required for allowlist" unless reason
+      raise Error, "locator (e.g., spec/file_spec.rb:10) is required" unless locator
+
+      entry = Budget.load(budget_path).add_to_allowlist(locator, reason: reason)
+      @output.puts "Allowlisted: #{entry.test_case_key}"
+
+      0
     end
   end
 end

@@ -18,6 +18,7 @@ RSpec.describe TestBudget::Parser::Rspec do
     expect(first.name).to eq("User is valid")
     expect(first.duration).to eq(0.123)
     expect(first.status).to eq("passed")
+    expect(first.line_number).to eq(4)
   end
 
   it "strips ./ from file paths" do

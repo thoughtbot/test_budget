@@ -13,7 +13,7 @@ module TestBudget
     def allowlist_snippet
       return nil if kind == :suite
 
-      "- \"#{test_case.key}\""
+      "- test_case: \"#{test_case.key}\""
     end
   end
 end
