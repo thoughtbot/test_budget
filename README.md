@@ -20,10 +20,10 @@ Add to your Gemfile:
 gem "test_budget"
 ```
 
-## Generate RSpec JSON output
-
 > [!NOTE]
 > Test Budget currently supports **RSpec only**. Minitest support is not yet available.
+
+## Generate RSpec JSON output
 
 > [!TIP]
 > You can skip this step and run `test_budget init` without a results file to
