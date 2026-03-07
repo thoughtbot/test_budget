@@ -29,8 +29,8 @@ RSpec.describe TestBudget::Violation do
     end
   end
 
-  describe "#allowlist_snippet" do
-    it "returns YAML snippet for per_test_case violations" do
+  describe "#locator" do
+    it "returns locator for per_test_case violations" do
       test_case = TestBudget::TestCase.new(
         file: "spec/models/user_spec.rb", name: "User#full_name",
         duration: 2.5, status: "passed", line_number: 4
@@ -40,15 +40,13 @@ RSpec.describe TestBudget::Violation do
         limit: 2.0, kind: :per_test_case
       )
 
-      expect(violation.allowlist_snippet).to eq(
-        "- test_case: \"spec/models/user_spec.rb -- User#full_name\""
-      )
+      expect(violation.locator).to eq("spec/models/user_spec.rb:4")
     end
 
     it "returns nil for suite violations" do
       violation = described_class.new(test_case: nil, duration: 650.0, limit: 600.0, kind: :suite)
 
-      expect(violation.allowlist_snippet).to be_nil
+      expect(violation.locator).to be_nil
     end
   end
 end

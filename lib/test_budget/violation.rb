@@ -10,10 +10,10 @@ module TestBudget
       end
     end
 
-    def allowlist_snippet
+    def locator
       return nil if kind == :suite
 
-      "- test_case: \"#{test_case.key}\""
+      "#{test_case.file}:#{test_case.line_number}"
     end
   end
 end

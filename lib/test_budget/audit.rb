@@ -11,7 +11,7 @@ module TestBudget
       budget = Budget.load(@budget_path)
       test_cases = Parser::Rspec.parse(budget.results_path)
       violations = Auditor.new(budget).audit(test_cases)
-      Reporter.new(output: @output).report(violations)
+      Reporter.new(output: @output, budget_path: @budget_path).report(violations)
 
       violations.empty?
     end

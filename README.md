@@ -118,8 +118,8 @@ bundle exec test_budget allowlist spec/models/user_spec.rb:10 --reason "Tracking
 Test budget: 2 violation(s) found
 
   1) spec/models/user_spec.rb -- User#full_name (2.50s) exceeds model limit (1.00s)
-     To allowlist, add to .test_budget.yml:
-     - "spec/models/user_spec.rb -- User#full_name"
+     To allowlist, run:
+     bundle exec test_budget allowlist spec/models/user_spec.rb:10 --reason "<reason>"
 
   2) Suite total (650.00s) exceeds limit (600.00s)
 ```

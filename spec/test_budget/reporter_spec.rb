@@ -2,7 +2,7 @@
 
 RSpec.describe TestBudget::Reporter do
   let(:output) { StringIO.new }
-  let(:reporter) { described_class.new(output: output) }
+  let(:reporter) { described_class.new(output: output, budget_path: ".test_budget.yml") }
 
   def make_per_test_violation(file: "spec/models/user_spec.rb", name: "User#slow", duration: 2.5, limit: 2.0)
     test_case = TestBudget::TestCase.new(file: file, name: name, duration: duration, status: "passed", line_number: 1)
@@ -31,9 +31,9 @@ RSpec.describe TestBudget::Reporter do
     expect(output.string).to include("Post#title")
   end
 
-  it "includes allowlist snippets for per_test_case violations" do
+  it "includes allowlist command for per_test_case violations" do
     reporter.report([make_per_test_violation])
-    expect(output.string).to include("- test_case: \"spec/models/user_spec.rb -- User#slow\"")
+    expect(output.string).to include("bundle exec test_budget allowlist spec/models/user_spec.rb:1")
   end
 
   it "handles mixed violation types" do
@@ -42,5 +42,13 @@ RSpec.describe TestBudget::Reporter do
 
     expect(output.string).to include("User#slow")
     expect(output.string).to include("Suite total")
+  end
+
+  it "uses custom budget path in allowlist command" do
+    custom_reporter = described_class.new(output: output, budget_path: "config/my_budget.yml")
+    custom_reporter.report([make_per_test_violation])
+
+    expect(output.string).to include("--budget config/my_budget.yml")
+    expect(output.string).not_to include(".test_budget.yml")
   end
 end

@@ -2,8 +2,9 @@
 
 module TestBudget
   class Reporter
-    def initialize(output:)
+    def initialize(output:, budget_path:)
       @output = output
+      @budget_path = budget_path
     end
 
     def report(violations)
@@ -17,9 +18,10 @@ module TestBudget
       violations.each_with_index do |violation, index|
         @output.puts "  #{index + 1}) #{violation.message}"
 
-        if (snippet = violation.allowlist_snippet)
-          @output.puts "     To allowlist, add to .test_budget.yml:"
-          @output.puts "     #{snippet}"
+        if (locator = violation.locator)
+          budget_flag = (@budget_path == ".test_budget.yml") ? "" : " --budget #{@budget_path}"
+          @output.puts "     To allowlist, run:"
+          @output.puts "     bundle exec test_budget allowlist #{locator}#{budget_flag} --reason \"<reason>\""
         end
       end
     end
