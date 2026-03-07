@@ -22,6 +22,9 @@ gem "test_budget"
 
 ## Generate RSpec JSON output
 
+> [!NOTE]
+> Test Budget currently supports **RSpec only**. Minitest support is not yet available.
+
 > [!TIP]
 > You can skip this step and run `test_budget init` without a results file to
 > get started with sensible defaults right away.
@@ -100,6 +103,14 @@ bundle exec test_budget audit --budget config/test_budget.yml
 ```
 
 Exit code is `0` when all tests are within budget, `1` when there are violations.
+
+## Allowlist
+
+You can allowlist individual tests via the CLI:
+
+```bash
+bundle exec test_budget allowlist spec/models/user_spec.rb:10 --reason "Tracking in JIRA-1234"
+```
 
 ### Example output
 
