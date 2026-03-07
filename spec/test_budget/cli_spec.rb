@@ -6,15 +6,15 @@ RSpec.describe TestBudget::CLI do
   let(:cli) { described_class.new(output: output, error: error) }
 
   it "returns 0 when all tests are within budget" do
-    write_results_file([
+    write_timings_file([
       {
         "file_path" => "spec/models/user_spec.rb",
         "full_description" => "User is valid",
         "run_time" => 1.0, "status" => "passed"
       }
-    ]) do |rspec_path|
+    ]) do |timings_path|
       write_budget_file(
-        "results_path" => rspec_path,
+        "timings_path" => timings_path,
         "per_test_case" => {"default" => 5}
       ) do |budget_path|
         exit_code = cli.call(["audit", "--budget", budget_path])
@@ -26,15 +26,15 @@ RSpec.describe TestBudget::CLI do
   end
 
   it "returns 1 when tests exceed budget" do
-    write_results_file([
+    write_timings_file([
       {
         "file_path" => "spec/models/user_spec.rb",
         "full_description" => "User is valid",
         "run_time" => 10.0, "status" => "passed"
       }
-    ]) do |rspec_path|
+    ]) do |timings_path|
       write_budget_file(
-        "results_path" => rspec_path,
+        "timings_path" => timings_path,
         "per_test_case" => {"default" => 5}
       ) do |budget_path|
         exit_code = cli.call(["audit", "--budget", budget_path])
@@ -110,16 +110,16 @@ RSpec.describe TestBudget::CLI do
 
   describe "allowlist subcommand" do
     it "writes entry and returns 0" do
-      write_results_file([
+      write_timings_file([
         {
           "file_path" => "spec/models/user_spec.rb",
           "full_description" => "User is valid",
           "run_time" => 1.0, "status" => "passed",
           "line_number" => 4
         }
-      ]) do |rspec_path|
+      ]) do |timings_path|
         write_budget_file(
-          "results_path" => rspec_path,
+          "timings_path" => timings_path,
           "per_test_case" => {"default" => 5}
         ) do |budget_path|
           exit_code = cli.call(["allowlist", "spec/models/user_spec.rb:4", "--reason", "Legacy test", "--budget", budget_path])
@@ -134,16 +134,16 @@ RSpec.describe TestBudget::CLI do
     end
 
     it "returns 1 when --reason is missing" do
-      write_results_file([
+      write_timings_file([
         {
           "file_path" => "spec/models/user_spec.rb",
           "full_description" => "User is valid",
           "run_time" => 1.0, "status" => "passed",
           "line_number" => 4
         }
-      ]) do |rspec_path|
+      ]) do |timings_path|
         write_budget_file(
-          "results_path" => rspec_path,
+          "timings_path" => timings_path,
           "per_test_case" => {"default" => 5}
         ) do |budget_path|
           exit_code = cli.call(["allowlist", "spec/models/user_spec.rb:4", "--budget", budget_path])
@@ -162,16 +162,16 @@ RSpec.describe TestBudget::CLI do
     end
 
     it "returns 1 when no matching test case" do
-      write_results_file([
+      write_timings_file([
         {
           "file_path" => "spec/models/user_spec.rb",
           "full_description" => "User is valid",
           "run_time" => 1.0, "status" => "passed",
           "line_number" => 4
         }
-      ]) do |rspec_path|
+      ]) do |timings_path|
         write_budget_file(
-          "results_path" => rspec_path,
+          "timings_path" => timings_path,
           "per_test_case" => {"default" => 5}
         ) do |budget_path|
           exit_code = cli.call(["allowlist", "spec/models/post_spec.rb:4", "--reason", "test", "--budget", budget_path])
@@ -191,14 +191,14 @@ RSpec.describe TestBudget::CLI do
     end
 
     it "generates config from custom results path" do
-      write_results_file([
+      write_timings_file([
         {"file_path" => "spec/models/user_spec.rb", "full_description" => "User is valid", "run_time" => 1.0, "status" => "passed", "line_number" => 4}
-      ]) do |rspec_path|
-        exit_code = cli.call(["init", rspec_path])
+      ]) do |timings_path|
+        exit_code = cli.call(["init", timings_path])
 
         expect(exit_code).to eq(0)
         config = YAML.safe_load_file(".test_budget.yml")
-        expect(config["results_path"]).to eq(rspec_path)
+        expect(config["timings_path"]).to eq(timings_path)
         expect(config["suite"]["max_duration"]).to be_a(Integer)
       end
     end
@@ -208,7 +208,7 @@ RSpec.describe TestBudget::CLI do
 
       expect(exit_code).to eq(0)
       config = YAML.safe_load_file(".test_budget.yml")
-      expect(config["results_path"]).to eq("tmp/test_budget_results.json")
+      expect(config["timings_path"]).to eq("tmp/test_timings.json")
       expect(config).not_to have_key("suite")
     end
 

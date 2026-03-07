@@ -9,7 +9,7 @@ module TestBudget
 
     def perform
       budget = Budget.load(@budget_path)
-      test_cases = Parser::Rspec.parse(budget.results_path)
+      test_cases = Parser::Rspec.parse(budget.timings_path)
       violations = Auditor.new(budget).audit(test_cases)
       Reporter.new(output: @output, budget_path: @budget_path).report(violations)
 

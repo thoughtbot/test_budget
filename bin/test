@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-bundle exec rspec --format progress --format json --out tmp/rspec_results.json "$@"
+bundle exec rspec --format progress --format json --out tmp/test_timings.json "$@"
 bundle exec exe/test_budget audit

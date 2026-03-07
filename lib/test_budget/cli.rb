@@ -100,12 +100,12 @@ module TestBudget
       force = false
 
       OptionParser.new do |opts|
-        opts.banner = "Usage: test_budget init [results_file] [options]"
+        opts.banner = "Usage: test_budget init [timings_file] [options]"
         opts.on("--force", "Overwrite existing config") { force = true }
       end.parse!(args)
-      results_path = args.shift
+      timings_path = args.shift
 
-      Budget.estimate(results_path: results_path, output: @output, force: force)
+      Budget.estimate(timings_path: timings_path, output: @output, force: force)
 
       0
     end

@@ -8,7 +8,7 @@ module FileHelpers
   def build_budget(per_test_case: nil, suite: nil, allowlist: [])
     TestBudget::Budget.new(
       path: nil,
-      results_path: nil,
+      timings_path: nil,
       suite: TestBudget::Budget::Suite.new(max_duration: suite&.dig(:max_duration)),
       per_test_case: TestBudget::Budget::PerTestCase.new(
         default: per_test_case&.dig(:default),
@@ -24,8 +24,8 @@ module FileHelpers
     with_tempfile([".test_budget", ".yml"], data.to_yaml, &block)
   end
 
-  def write_results_file(examples, &block)
-    with_tempfile(["rspec_results", ".json"], JSON.generate("examples" => examples), &block)
+  def write_timings_file(examples, &block)
+    with_tempfile(["test_timings", ".json"], JSON.generate("examples" => examples), &block)
   end
 
   private

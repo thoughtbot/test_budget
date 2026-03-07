@@ -3,7 +3,7 @@
 require "yaml"
 
 module TestBudget
-  class Budget < Data.define(:path, :results_path, :suite, :per_test_case, :allowlist)
+  class Budget < Data.define(:path, :timings_path, :suite, :per_test_case, :allowlist)
     Suite = Data.define(:max_duration)
     PerTestCase = Data.define(:default, :types)
 
@@ -15,7 +15,7 @@ module TestBudget
 
       budget = new(
         path: path,
-        results_path: config["results_path"],
+        timings_path: config["timings_path"],
         suite: Suite.new(max_duration: suite_config["max_duration"]),
         per_test_case: PerTestCase.new(
           default: per_test_case_config["default"],
@@ -24,7 +24,7 @@ module TestBudget
         allowlist: Allowlist.new(config["allowlist"] || [])
       )
 
-      raise TestBudget::Error, "results_path is required in budget file" unless budget.results_path
+      raise TestBudget::Error, "timings_path is required in budget file" unless budget.timings_path
       raise TestBudget::Error, "No limits configured. Set suite.max_duration or per_test_case limits" unless budget.limits_set?
 
       budget
@@ -37,7 +37,7 @@ module TestBudget
     end
 
     def add_to_allowlist(locator, reason:)
-      test_cases = Parser::Rspec.parse(results_path)
+      test_cases = Parser::Rspec.parse(timings_path)
       test_case = TestCase.find_by_location!(test_cases, locator)
 
       allowlist.add(test_case.key, reason: reason).tap { save }
@@ -57,7 +57,7 @@ module TestBudget
 
     def to_h
       deep_compact_blank(
-        "results_path" => results_path,
+        "timings_path" => timings_path,
         "suite" => {"max_duration" => suite.max_duration},
         "per_test_case" => {
           "default" => per_test_case.default,

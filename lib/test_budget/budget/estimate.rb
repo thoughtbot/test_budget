@@ -5,12 +5,12 @@ require "yaml"
 module TestBudget
   class Budget
     class Estimate
-      DEFAULT_RESULTS_PATH = "tmp/test_budget_results.json"
+      DEFAULT_TIMINGS_PATH = "tmp/test_timings.json"
       BUFFER = 0.10
       PER_TEST_CASE_DEFAULTS = {"default" => 3, "system" => 6, "request" => 3, "model" => 1.5}.freeze
 
-      def initialize(output:, results_path: nil, force: false)
-        @results_path = results_path
+      def initialize(output:, timings_path: nil, force: false)
+        @timings_path = timings_path
         @output = output
         @force = force
       end
@@ -18,7 +18,7 @@ module TestBudget
       def generate
         guard_existing_config!
 
-        if @results_path
+        if @timings_path
           generate_from_results
         else
           generate_defaults
@@ -36,14 +36,14 @@ module TestBudget
       end
 
       def generate_from_results
-        test_cases = Parser::Rspec.parse(@results_path)
+        test_cases = Parser::Rspec.parse(@timings_path)
         timed_cases = test_cases.filter(&:duration)
         suite_duration = timed_cases.sum(&:duration)
         suite_budget = (suite_duration * (1 + BUFFER)).ceil
         per_test_case_limits = derive_per_test_case(timed_cases)
 
         budget = build_budget(
-          results_path: @results_path,
+          timings_path: @timings_path,
           suite_max_duration: suite_budget,
           per_test_case_limits: per_test_case_limits
         )
@@ -52,17 +52,17 @@ module TestBudget
 
       def generate_defaults
         build_budget(
-          results_path: DEFAULT_RESULTS_PATH,
+          timings_path: DEFAULT_TIMINGS_PATH,
           per_test_case_limits: PER_TEST_CASE_DEFAULTS
         ).save
       end
 
-      def build_budget(results_path:, per_test_case_limits:, suite_max_duration: nil)
+      def build_budget(timings_path:, per_test_case_limits:, suite_max_duration: nil)
         types = per_test_case_limits.except("default").transform_keys(&:to_sym)
 
         Budget.new(
           path: DEFAULT_BUDGET_PATH,
-          results_path: results_path,
+          timings_path: timings_path,
           suite: Budget::Suite.new(max_duration: suite_max_duration),
           per_test_case: Budget::PerTestCase.new(
             default: per_test_case_limits["default"],

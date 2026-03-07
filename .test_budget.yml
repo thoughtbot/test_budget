@@ -1,4 +1,4 @@
-results_path: tmp/rspec_results.json
+timings_path: tmp/test_timings.json
 
 suite:
   max_duration: 1

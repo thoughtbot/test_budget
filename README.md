@@ -32,13 +32,13 @@ gem "test_budget"
 Add to your RSpec configuration or CI command:
 
 ```bash
-bundle exec rspec --format json --out tmp/rspec_results.json
+bundle exec rspec --format json --out tmp/test_timings.json
 ```
 
 Or combine with your usual formatter:
 
 ```bash
-bundle exec rspec --format progress --format json --out tmp/rspec_results.json
+bundle exec rspec --format progress --format json --out tmp/test_timings.json
 ```
 
 ## Quick start
@@ -46,7 +46,7 @@ bundle exec rspec --format progress --format json --out tmp/rspec_results.json
 Generate a starter config from an existing RSpec JSON results file:
 
 ```bash
-bundle exec test_budget init tmp/rspec_results.json
+bundle exec test_budget init tmp/test_timings.json
 ```
 
 This derives suite and per-test-case budgets from your actual test data (95th
@@ -65,7 +65,7 @@ The `init` command creates a `.test_budget.yml` in your project root. You can
 also create one manually:
 
 ```yaml
-results_path: tmp/rspec_results.json
+timings_path: tmp/test_timings.json
 
 suite:
   max_duration: 300 # seconds
@@ -81,7 +81,7 @@ allowlist:
     reason: "PDF generation is inherently slow, tracking in JIRA-1234"
 ```
 
-- **`results_path`** (required) — path to the RSpec JSON output file.
+- **`timings_path`** (required) — path to the RSpec JSON output file.
 - **`suite.max_duration`** — total duration budget for the entire suite.
 - **`per_test_case.default`** — default per-test limit. Applies to any type without a specific limit.
 - **`per_test_case.<type>`** — per-test limit for a specific type. Types are inferred from file paths by singularizing the directory name (`spec/models/` -> `model`, `spec/features/` -> `feature`, `spec/system/` -> `system`, etc).
@@ -130,7 +130,7 @@ Run the audit after your test suite:
 
 ```yaml
 # .github/workflows/ci.yml
-- run: bundle exec rspec --format progress --format json --out tmp/rspec_results.json
+- run: bundle exec rspec --format progress --format json --out tmp/test_timings.json
 - run: bundle exec test_budget audit
 ```
 

@@ -3,14 +3,14 @@
 RSpec.describe TestBudget::Budget do
   it "loads configuration from YAML" do
     write_budget_file(
-      "results_path" => "tmp/results.json",
+      "timings_path" => "tmp/results.json",
       "suite" => {"max_duration" => 600},
       "per_test_case" => {"default" => 3, "system" => 10, "model" => 2},
       "allowlist" => [{"test_case" => "spec/models/user_spec.rb -- User#slow", "reason" => "Legacy test"}]
     ) do |path|
       budget = described_class.load(path)
 
-      expect(budget.results_path).to eq("tmp/results.json")
+      expect(budget.timings_path).to eq("tmp/results.json")
       expect(budget.suite.max_duration).to eq(600)
       expect(budget.per_test_case.default).to eq(3)
       expect(budget.per_test_case.types).to eq({system: 10, model: 2})
@@ -21,7 +21,7 @@ RSpec.describe TestBudget::Budget do
 
   it "converts type keys to symbols" do
     write_budget_file(
-      "results_path" => "tmp/results.json",
+      "timings_path" => "tmp/results.json",
       "per_test_case" => {"request" => 3}
     ) do |path|
       budget = described_class.load(path)
@@ -34,39 +34,39 @@ RSpec.describe TestBudget::Budget do
     expect { described_class.load("nonexistent.yml") }.to raise_error(TestBudget::Error, /not found/)
   end
 
-  it "raises Error when results_path is missing" do
+  it "raises Error when timings_path is missing" do
     write_budget_file("per_test_case" => {"default" => 5}) do |path|
-      expect { described_class.load(path) }.to raise_error(TestBudget::Error, /results_path/)
+      expect { described_class.load(path) }.to raise_error(TestBudget::Error, /timings_path/)
     end
   end
 
   it "raises Error when no limits are configured" do
-    write_budget_file("results_path" => "tmp/results.json") do |path|
+    write_budget_file("timings_path" => "tmp/results.json") do |path|
       expect { described_class.load(path) }.to raise_error(TestBudget::Error, /No limits configured/)
     end
   end
 
   it "does not raise when only suite is configured" do
-    write_budget_file("results_path" => "tmp/results.json", "suite" => {"max_duration" => 600}) do |path|
+    write_budget_file("timings_path" => "tmp/results.json", "suite" => {"max_duration" => 600}) do |path|
       expect { described_class.load(path) }.not_to raise_error
     end
   end
 
   it "does not raise when only per_test_case default is configured" do
-    write_budget_file("results_path" => "tmp/results.json", "per_test_case" => {"default" => 5}) do |path|
+    write_budget_file("timings_path" => "tmp/results.json", "per_test_case" => {"default" => 5}) do |path|
       expect { described_class.load(path) }.not_to raise_error
     end
   end
 
   it "does not raise when only per_test_case type limits are configured" do
-    write_budget_file("results_path" => "tmp/results.json", "per_test_case" => {"model" => 2}) do |path|
+    write_budget_file("timings_path" => "tmp/results.json", "per_test_case" => {"model" => 2}) do |path|
       expect { described_class.load(path) }.not_to raise_error
     end
   end
 
   it "loads without error when allowlist is nil" do
     write_budget_file(
-      "results_path" => "tmp/results.json",
+      "timings_path" => "tmp/results.json",
       "per_test_case" => {"default" => 5},
       "allowlist" => nil
     ) do |path|
@@ -76,7 +76,7 @@ RSpec.describe TestBudget::Budget do
 
   it "loads without error when suite is nil" do
     write_budget_file(
-      "results_path" => "tmp/results.json",
+      "timings_path" => "tmp/results.json",
       "per_test_case" => {"default" => 5},
       "suite" => nil
     ) do |path|
@@ -86,7 +86,7 @@ RSpec.describe TestBudget::Budget do
 
   it "loads without error when per_test_case is nil" do
     write_budget_file(
-      "results_path" => "tmp/results.json",
+      "timings_path" => "tmp/results.json",
       "suite" => {"max_duration" => 600},
       "per_test_case" => nil
     ) do |path|
@@ -96,12 +96,12 @@ RSpec.describe TestBudget::Budget do
 
   describe "#add_to_allowlist" do
     def budget_with_results(allowlist: [])
-      write_results_file([
+      write_timings_file([
         {"file_path" => "spec/models/user_spec.rb", "full_description" => "User is valid",
          "run_time" => 1.0, "status" => "passed", "line_number" => 4}
-      ]) do |rspec_path|
+      ]) do |timings_path|
         data = {
-          "results_path" => rspec_path,
+          "timings_path" => timings_path,
           "per_test_case" => {"default" => 5}
         }
         data["allowlist"] = allowlist unless allowlist.empty?
