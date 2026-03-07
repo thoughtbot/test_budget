@@ -12,12 +12,17 @@ module TestBudget
 
     def call(argv)
       args = argv.dup
+
+      return print_help if args.empty? || (args & %w[--help -h]).any?
+      return print_version if (args & %w[--version -v]).any?
+
       parsed = command_parser.parse!(args)
 
       case parsed[:command]
       in "audit" then run_audit(args)
       in "allowlist" then run_allowlist(args)
       in "init" then run_init(args)
+      in "help" then print_help
       end
     rescue ArgumentParser::ParseError, TestBudget::Error, OptionParser::MissingArgument => e
       @error.puts e.message
@@ -28,8 +33,34 @@ module TestBudget
 
     def command_parser
       ArgumentParser.build do
-        required :command, pattern: %w[audit allowlist init]
+        required :command, pattern: %w[audit allowlist init help]
       end
+    end
+
+    def print_help
+      @output.puts help_text
+      0
+    end
+
+    def print_version
+      @output.puts "test_budget #{TestBudget::VERSION}"
+      0
+    end
+
+    def help_text
+      <<~HELP
+        Usage: test_budget <command> [options]
+
+        Commands:
+          audit       Check test results against budget
+          allowlist   Exclude a test from budget checks
+          init        Generate starter .test_budget.yml config
+          help        Show this help message
+
+        Options:
+          -h, --help     Show this help message
+          -v, --version  Show version
+      HELP
     end
 
     def run_audit(args)

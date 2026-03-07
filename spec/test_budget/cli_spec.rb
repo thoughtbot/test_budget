@@ -45,6 +45,55 @@ RSpec.describe TestBudget::CLI do
     end
   end
 
+  describe "help" do
+    it "prints help and returns 0 for 'help' command" do
+      exit_code = cli.call(["help"])
+
+      expect(exit_code).to eq(0)
+      expect(output.string).to include("Usage: test_budget <command>")
+      expect(output.string).to include("audit")
+      expect(output.string).to include("allowlist")
+      expect(output.string).to include("init")
+    end
+
+    it "prints help and returns 0 for --help flag" do
+      exit_code = cli.call(["--help"])
+
+      expect(exit_code).to eq(0)
+      expect(output.string).to include("Usage: test_budget <command>")
+    end
+
+    it "prints help and returns 0 for -h flag" do
+      exit_code = cli.call(["-h"])
+
+      expect(exit_code).to eq(0)
+      expect(output.string).to include("Usage: test_budget <command>")
+    end
+
+    it "prints help and returns 0 with no arguments" do
+      exit_code = cli.call([])
+
+      expect(exit_code).to eq(0)
+      expect(output.string).to include("Usage: test_budget <command>")
+    end
+  end
+
+  describe "version" do
+    it "prints version and returns 0 for --version" do
+      exit_code = cli.call(["--version"])
+
+      expect(exit_code).to eq(0)
+      expect(output.string).to include(TestBudget::VERSION)
+    end
+
+    it "prints version and returns 0 for -v" do
+      exit_code = cli.call(["-v"])
+
+      expect(exit_code).to eq(0)
+      expect(output.string).to include(TestBudget::VERSION)
+    end
+  end
+
   it "returns 1 for unknown command" do
     exit_code = cli.call(["unknown"])
 
