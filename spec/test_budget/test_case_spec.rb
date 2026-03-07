@@ -14,7 +14,7 @@ RSpec.describe TestBudget::TestCase do
       "spec/features/sign_in_spec.rb" => :feature,
       "spec/policies/admin_policy_spec.rb" => :policy,
       "spec/queries/user_query_spec.rb" => :query,
-      "spec/factories/user_factory_spec.rb" => :factory,
+      "spec/factories/user_factory_spec.rb" => :factory
     }.each do |file, expected_type|
       it "returns #{expected_type.inspect} for #{file}" do
         test_case = described_class.new(file: file, name: "example", duration: 1.0, status: "passed", line_number: 1)
