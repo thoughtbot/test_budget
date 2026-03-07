@@ -105,7 +105,7 @@ module TestBudget
       end.parse!(args)
       results_path = args.shift
 
-      Onboarding.new(results_path: results_path, output: @output, force: force).start
+      Budget.estimate(results_path: results_path, output: @output, force: force)
 
       0
     end

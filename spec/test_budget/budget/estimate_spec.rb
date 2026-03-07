@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.describe TestBudget::Onboarding do
+RSpec.describe TestBudget::Budget::Estimate do
   let(:output) { StringIO.new }
 
   around do |example|
@@ -9,7 +9,7 @@ RSpec.describe TestBudget::Onboarding do
     end
   end
 
-  describe "#start" do
+  describe "#generate" do
     context "with a results file" do
       it "generates config with correct YAML structure" do
         write_results_file([
@@ -18,7 +18,7 @@ RSpec.describe TestBudget::Onboarding do
           {"file_path" => "spec/system/login_spec.rb", "full_description" => "Login works", "run_time" => 4.0, "status" => "passed", "line_number" => 3},
           {"file_path" => "spec/requests/api_spec.rb", "full_description" => "API responds", "run_time" => 1.5, "status" => "passed", "line_number" => 2}
         ]) do |rspec_path|
-          described_class.new(results_path: rspec_path, output: output).start
+          described_class.new(results_path: rspec_path, output: output).generate
 
           config = YAML.safe_load_file(".test_budget.yml")
           expect(config["results_path"]).to eq(rspec_path)
@@ -33,7 +33,7 @@ RSpec.describe TestBudget::Onboarding do
           {"file_path" => "spec/models/user_spec.rb", "full_description" => "User is valid", "run_time" => 5.0, "status" => "passed", "line_number" => 4},
           {"file_path" => "spec/models/post_spec.rb", "full_description" => "Post is valid", "run_time" => 5.0, "status" => "passed", "line_number" => 5}
         ]) do |rspec_path|
-          described_class.new(results_path: rspec_path, output: output).start
+          described_class.new(results_path: rspec_path, output: output).generate
 
           config = YAML.safe_load_file(".test_budget.yml")
           expect(config["suite"]["max_duration"]).to eq(11) # ceil(10.0 * 1.1) = 11
@@ -48,7 +48,7 @@ RSpec.describe TestBudget::Onboarding do
         end
 
         write_results_file(examples) do |rspec_path|
-          described_class.new(results_path: rspec_path, output: output).start
+          described_class.new(results_path: rspec_path, output: output).generate
 
           config = YAML.safe_load_file(".test_budget.yml")
           # p95 of 1.0..3.0 (21 items): index 19.0, value 2.9
@@ -61,7 +61,7 @@ RSpec.describe TestBudget::Onboarding do
         write_results_file([
           {"file_path" => "spec/models/user_spec.rb", "full_description" => "User is valid", "run_time" => 1.0, "status" => "passed", "line_number" => 4}
         ]) do |rspec_path|
-          described_class.new(results_path: rspec_path, output: output).start
+          described_class.new(results_path: rspec_path, output: output).generate
 
           config = YAML.safe_load_file(".test_budget.yml")
           expect(config["per_test_case"]["system"]).to eq(6)
@@ -74,7 +74,7 @@ RSpec.describe TestBudget::Onboarding do
           {"file_path" => "spec/models/user_spec.rb", "full_description" => "User is valid", "run_time" => nil, "status" => "pending", "line_number" => 4},
           {"file_path" => "spec/models/post_spec.rb", "full_description" => "Post is valid", "run_time" => 2.0, "status" => "passed", "line_number" => 5}
         ]) do |rspec_path|
-          described_class.new(results_path: rspec_path, output: output).start
+          described_class.new(results_path: rspec_path, output: output).generate
 
           config = YAML.safe_load_file(".test_budget.yml")
           expect(config["suite"]["max_duration"]).to eq(3) # ceil(2.0 * 1.1) = 3
@@ -85,7 +85,7 @@ RSpec.describe TestBudget::Onboarding do
         write_results_file([
           {"file_path" => "spec/models/user_spec.rb", "full_description" => "User is valid", "run_time" => 1.0, "status" => "passed", "line_number" => 4}
         ]) do |rspec_path|
-          described_class.new(results_path: rspec_path, output: output).start
+          described_class.new(results_path: rspec_path, output: output).generate
 
           expect(output.string).to include("Created .test_budget.yml")
         end
@@ -94,7 +94,7 @@ RSpec.describe TestBudget::Onboarding do
 
     context "without a results file" do
       it "generates config with defaults only and no suite section" do
-        described_class.new(results_path: nil, output: output).start
+        described_class.new(results_path: nil, output: output).generate
 
         config = YAML.safe_load_file(".test_budget.yml")
         expect(config["results_path"]).to eq("tmp/test_budget_results.json")
@@ -107,7 +107,7 @@ RSpec.describe TestBudget::Onboarding do
       end
 
       it "prints created message" do
-        described_class.new(results_path: nil, output: output).start
+        described_class.new(results_path: nil, output: output).generate
 
         expect(output.string).to include("Created .test_budget.yml")
       end
@@ -118,14 +118,14 @@ RSpec.describe TestBudget::Onboarding do
         File.write(".test_budget.yml", "existing: config")
 
         expect {
-          described_class.new(results_path: nil, output: output).start
+          described_class.new(results_path: nil, output: output).generate
         }.to raise_error(TestBudget::Error, /--force/)
       end
 
       it "overwrites with force: true" do
         File.write(".test_budget.yml", "existing: config")
 
-        described_class.new(results_path: nil, output: output, force: true).start
+        described_class.new(results_path: nil, output: output, force: true).generate
 
         config = YAML.safe_load_file(".test_budget.yml")
         expect(config["per_test_case"]["default"]).to eq(3)
@@ -134,7 +134,7 @@ RSpec.describe TestBudget::Onboarding do
 
     it "raises error when explicit results path doesn't exist" do
       expect {
-        described_class.new(results_path: "nonexistent.json", output: output).start
+        described_class.new(results_path: "nonexistent.json", output: output).generate
       }.to raise_error(TestBudget::Error, /not found/)
     end
 
@@ -144,7 +144,7 @@ RSpec.describe TestBudget::Onboarding do
         f.flush
 
         expect {
-          described_class.new(results_path: f.path, output: output).start
+          described_class.new(results_path: f.path, output: output).generate
         }.to raise_error(TestBudget::Error, /Invalid JSON/)
       end
     end

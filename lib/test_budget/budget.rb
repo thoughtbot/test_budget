@@ -47,6 +47,8 @@ module TestBudget
       suite.max_duration || per_test_case.default || per_test_case.types.any?
     end
 
+    def self.estimate(...) = Estimate.new(...).generate
+
     def save
       File.write(path, YAML.dump(to_h))
     end
