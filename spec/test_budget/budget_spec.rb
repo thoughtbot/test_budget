@@ -64,6 +64,36 @@ RSpec.describe TestBudget::Budget do
     end
   end
 
+  it "loads without error when allowlist is nil" do
+    write_budget_file(
+      "results_path" => "tmp/results.json",
+      "per_test_case" => {"default" => 5},
+      "allowlist" => nil
+    ) do |path|
+      expect { described_class.load(path) }.not_to raise_error
+    end
+  end
+
+  it "loads without error when suite is nil" do
+    write_budget_file(
+      "results_path" => "tmp/results.json",
+      "per_test_case" => {"default" => 5},
+      "suite" => nil
+    ) do |path|
+      expect { described_class.load(path) }.not_to raise_error
+    end
+  end
+
+  it "loads without error when per_test_case is nil" do
+    write_budget_file(
+      "results_path" => "tmp/results.json",
+      "suite" => {"max_duration" => 600},
+      "per_test_case" => nil
+    ) do |path|
+      expect { described_class.load(path) }.not_to raise_error
+    end
+  end
+
   describe "#add_to_allowlist" do
     def budget_with_results(allowlist: [])
       write_results_file([

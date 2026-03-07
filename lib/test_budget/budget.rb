@@ -9,8 +9,8 @@ module TestBudget
 
     def self.load(path)
       config = YAML.safe_load_file(path) || {}
-      suite_config = config.fetch("suite", {}) || {}
-      per_test_case_config = config.fetch("per_test_case", {}) || {}
+      suite_config = config["suite"] || {}
+      per_test_case_config = config["per_test_case"] || {}
       types = per_test_case_config.except("default").transform_keys(&:to_sym)
 
       budget = new(
@@ -21,7 +21,7 @@ module TestBudget
           default: per_test_case_config["default"],
           types: types
         ),
-        allowlist: Allowlist.new(config.fetch("allowlist", []))
+        allowlist: Allowlist.new(config["allowlist"] || [])
       )
 
       raise TestBudget::Error, "results_path is required in budget file" unless budget.results_path
