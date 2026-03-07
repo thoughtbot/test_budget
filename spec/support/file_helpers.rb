@@ -37,5 +37,6 @@ module FileHelpers
     yield file.path
   ensure
     file&.close
+    File.unlink(file.path) if file
   end
 end
