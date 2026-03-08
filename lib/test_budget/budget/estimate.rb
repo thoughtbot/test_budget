@@ -36,11 +36,9 @@ module TestBudget
       end
 
       def generate_from_results
-        test_cases = Parser::Rspec.parse(@timings_path)
-        timed_cases = test_cases.filter(&:duration)
-        suite_duration = timed_cases.sum(&:duration)
-        suite_budget = (suite_duration * (1 + BUFFER)).ceil
-        per_test_case_limits = derive_per_test_case(timed_cases)
+        test_run = Parser::Rspec.parse(@timings_path)
+        suite_budget = (test_run.suite_duration * (1 + BUFFER)).ceil
+        per_test_case_limits = derive_per_test_case(test_run.test_cases)
 
         budget = build_budget(
           timings_path: @timings_path,
@@ -72,8 +70,8 @@ module TestBudget
         )
       end
 
-      def derive_per_test_case(test_cases)
-        grouped = test_cases.group_by { |tc| tc.type.to_s }
+      def derive_per_test_case(test_run)
+        grouped = test_run.group_by { |tc| tc.type.to_s }
 
         PER_TEST_CASE_DEFAULTS.merge(
           grouped.transform_values { |cases|

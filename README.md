@@ -41,6 +41,32 @@ Or combine with your usual formatter:
 bundle exec rspec --format progress --format json --out tmp/test_timings.json
 ```
 
+### Parallel test runners
+
+If you use [`parallel_tests`](https://github.com/grosser/parallel_tests),
+`$TEST_ENV_NUMBER` in command arguments is replaced per worker (empty string for
+worker 1, `2` for worker 2, etc.). Use it to write a separate output file per
+worker:
+
+```bash
+bundle exec parallel_rspec -- --format json --out 'tmp/test_timings$TEST_ENV_NUMBER.json'
+```
+
+This produces `test_timings.json`, `test_timings2.json`, `test_timings3.json`,
+etc. Then set your `timings_path` to a glob pattern:
+
+```yaml
+timings_path: "tmp/test_timings*.json"
+```
+
+If you use [`flatware`](https://github.com/briandunn/flatware), each worker
+appends its results to the same output file. Test Budget handles this
+automatically:
+
+```bash
+flatware rspec --format json --out tmp/test_timings.json
+```
+
 ## Quick start
 
 Generate a starter config from an existing RSpec JSON results file:
@@ -81,7 +107,7 @@ allowlist:
     reason: "PDF generation is inherently slow, tracking in JIRA-1234"
 ```
 
-- **`timings_path`** (required) — path to the RSpec JSON output file.
+- **`timings_path`** (required) — path (or glob pattern) to the RSpec JSON output file(s).
 - **`suite.max_duration`** — total duration budget for the entire suite.
 - **`per_test_case.default`** — default per-test limit. Applies to any type without a specific limit.
 - **`per_test_case.<type>`** — per-test limit for a specific type. Types are inferred from file paths by singularizing the directory name (`spec/models/` -> `model`, `spec/features/` -> `feature`, `spec/system/` -> `system`, etc).

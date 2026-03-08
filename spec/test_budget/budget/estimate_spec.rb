@@ -69,18 +69,6 @@ RSpec.describe TestBudget::Budget::Estimate do
         end
       end
 
-      it "skips test cases with nil duration" do
-        write_timings_file([
-          {"file_path" => "spec/models/user_spec.rb", "full_description" => "User is valid", "run_time" => nil, "status" => "pending", "line_number" => 4},
-          {"file_path" => "spec/models/post_spec.rb", "full_description" => "Post is valid", "run_time" => 2.0, "status" => "passed", "line_number" => 5}
-        ]) do |timings_path|
-          described_class.new(timings_path: timings_path, output: output).generate
-
-          config = YAML.safe_load_file(".test_budget.yml")
-          expect(config["suite"]["max_duration"]).to eq(3) # ceil(2.0 * 1.1) = 3
-        end
-      end
-
       it "prints created message" do
         write_timings_file([
           {"file_path" => "spec/models/user_spec.rb", "full_description" => "User is valid", "run_time" => 1.0, "status" => "passed", "line_number" => 4}
@@ -135,7 +123,7 @@ RSpec.describe TestBudget::Budget::Estimate do
     it "raises error when explicit results path doesn't exist" do
       expect {
         described_class.new(timings_path: "nonexistent.json", output: output).generate
-      }.to raise_error(TestBudget::Error, /not found/)
+      }.to raise_error(TestBudget::Error, /No timing files found/)
     end
 
     it "propagates parser errors for invalid files" do

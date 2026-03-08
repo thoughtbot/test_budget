@@ -5,24 +5,52 @@ require "json"
 module TestBudget
   module Parser
     module Rspec
-      def self.parse(json_path)
-        data = parse_json(json_path)
+      class TestRun
+        attr_reader :test_cases, :suite_duration
 
-        data["examples"].map do |example|
-          TestCase.new(
-            file: example["file_path"],
-            name: example["full_description"],
-            duration: example["run_time"],
-            status: example["status"],
-            line_number: example["line_number"]
-          )
+        def initialize(groups)
+          @test_cases = groups.flatten
+          @suite_duration = groups.map { |g| g.sum(&:duration) }.max || 0
         end
       end
 
-      private_class_method def self.parse_json(path)
-        JSON.parse(File.read(path))
-      rescue Errno::ENOENT
-        raise TestBudget::Error, "RSpec output not found: #{path}"
+      extend self
+
+      def parse(pattern)
+        paths = Dir.glob(pattern)
+        raise TestBudget::Error, "No timing files found matching: #{pattern}" if paths.empty?
+
+        groups = paths.flat_map { |path| parse_file(path) }
+        TestRun.new(groups)
+      end
+
+      private
+
+      def parse_file(path)
+        read_json_objects(path).map do |data|
+          data["examples"].map do |example|
+            TestCase.new(
+              file: example["file_path"],
+              name: example["full_description"],
+              duration: example["run_time"],
+              status: example["status"],
+              line_number: example["line_number"]
+            )
+          end
+        end
+      end
+
+      def read_json_objects(path)
+        content = File.read(path)
+        [JSON.parse(content)]
+      rescue JSON::ParserError
+        parse_concatenated_json(content, path)
+      end
+
+      CONCATENATED_JSON_BOUNDARY = /(?<=\})(?=\{)/
+
+      def parse_concatenated_json(content, path)
+        content.split(CONCATENATED_JSON_BOUNDARY).map { |chunk| JSON.parse(chunk) }
       rescue JSON::ParserError => e
         raise TestBudget::Error, "Invalid JSON in #{path}: #{e.message}"
       end

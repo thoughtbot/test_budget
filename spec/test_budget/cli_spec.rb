@@ -226,7 +226,7 @@ RSpec.describe TestBudget::CLI do
       exit_code = cli.call(["init", "nonexistent.json"])
 
       expect(exit_code).to eq(1)
-      expect(error.string).to include("not found")
+      expect(error.string).to include("No timing files found")
     end
 
     it "returns 1 when config exists without --force" do

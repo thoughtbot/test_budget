@@ -7,14 +7,12 @@ module TestBudget
         @budget = budget
       end
 
-      def check(test_cases)
+      def check(suite_duration)
         max = @budget.suite.max_duration
         return if max.nil?
+        return if suite_duration <= max
 
-        total = test_cases.sum(&:duration)
-        return if total <= max
-
-        Violation.new(test_case: nil, duration: total, limit: max, kind: :suite)
+        Violation.new(test_case: nil, duration: suite_duration, limit: max, kind: :suite)
       end
     end
   end

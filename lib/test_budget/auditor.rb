@@ -8,10 +8,10 @@ module TestBudget
       @suite = Checks::Suite.new(budget)
     end
 
-    def audit(test_cases)
+    def audit(test_run)
       [
-        test_case_violations(test_cases),
-        suite_violation(test_cases)
+        test_case_violations(test_run.test_cases),
+        @suite.check(test_run.suite_duration)
       ].flatten.compact
     end
 
@@ -24,7 +24,5 @@ module TestBudget
         @per_test_case.check(test_case)
       end
     end
-
-    def suite_violation(test_cases) = @suite.check(test_cases)
   end
 end

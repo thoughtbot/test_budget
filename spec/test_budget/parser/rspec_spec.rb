@@ -2,17 +2,15 @@
 
 RSpec.describe TestBudget::Parser::Rspec do
   let(:fixture_path) { File.expand_path("../../fixtures/rspec_output.json", __dir__) }
+  let(:test_run) { described_class.parse(fixture_path) }
 
   it "parses RSpec JSON output into TestCase objects" do
-    test_cases = described_class.parse(fixture_path)
-
-    expect(test_cases.size).to eq(3)
-    expect(test_cases).to all(be_a(TestBudget::TestCase))
+    expect(test_run.test_cases.size).to eq(3)
+    expect(test_run.test_cases).to all(be_a(TestBudget::TestCase))
   end
 
   it "maps fields correctly" do
-    test_cases = described_class.parse(fixture_path)
-    first = test_cases.first
+    first = test_run.test_cases.first
 
     expect(first.file).to eq("spec/models/user_spec.rb")
     expect(first.name).to eq("User is valid")
@@ -22,12 +20,15 @@ RSpec.describe TestBudget::Parser::Rspec do
   end
 
   it "strips ./ from file paths" do
-    test_cases = described_class.parse(fixture_path)
-    test_cases.each { |tc| expect(tc.file).not_to start_with("./") }
+    test_run.test_cases.each { |tc| expect(tc.file).not_to start_with("./") }
+  end
+
+  it "raises Error when glob matches nothing" do
+    expect { described_class.parse("/tmp/no_match_*.json") }.to raise_error(TestBudget::Error, /No timing files found/)
   end
 
   it "raises Error for missing file" do
-    expect { described_class.parse("nonexistent.json") }.to raise_error(TestBudget::Error, /not found/)
+    expect { described_class.parse("nonexistent.json") }.to raise_error(TestBudget::Error, /No timing files found/)
   end
 
   it "raises Error for invalid JSON" do
@@ -38,11 +39,62 @@ RSpec.describe TestBudget::Parser::Rspec do
     expect { described_class.parse(file.path) }.to raise_error(TestBudget::Error, /Invalid JSON/)
   end
 
+  it "merges results from multiple files" do
+    Dir.mktmpdir do |dir|
+      file1 = File.join(dir, "test_timings1.json")
+      file2 = File.join(dir, "test_timings2.json")
+
+      File.write(file1, JSON.generate({
+        "examples" => [
+          {"file_path" => "spec/models/user_spec.rb", "full_description" => "User is valid",
+           "run_time" => 0.1, "status" => "passed", "line_number" => 1}
+        ]
+      }))
+
+      File.write(file2, JSON.generate({
+        "examples" => [
+          {"file_path" => "spec/models/post_spec.rb", "full_description" => "Post is valid",
+           "run_time" => 0.2, "status" => "passed", "line_number" => 2}
+        ]
+      }))
+
+      result = described_class.parse(File.join(dir, "test_timings*.json"))
+
+      expect(result.test_cases.size).to eq(2)
+      expect(result.test_cases.map(&:file)).to contain_exactly("spec/models/user_spec.rb", "spec/models/post_spec.rb")
+      expect(result.suite_duration).to eq(0.2)
+    end
+  end
+
+  it "parses concatenated JSON objects (flatware-style)" do
+    file = Tempfile.new(["concat", ".json"])
+    obj1 = JSON.generate({
+      "examples" => [
+        {"file_path" => "spec/models/user_spec.rb", "full_description" => "User is valid",
+         "run_time" => 0.1, "status" => "passed", "line_number" => 1}
+      ]
+    })
+    obj2 = JSON.generate({
+      "examples" => [
+        {"file_path" => "spec/models/post_spec.rb", "full_description" => "Post is valid",
+         "run_time" => 0.2, "status" => "passed", "line_number" => 2}
+      ]
+    })
+    file.write(obj1 + obj2)
+    file.close
+
+    result = described_class.parse(file.path)
+
+    expect(result.test_cases.size).to eq(2)
+    expect(result.test_cases.map(&:file)).to contain_exactly("spec/models/user_spec.rb", "spec/models/post_spec.rb")
+    expect(result.suite_duration).to eq(0.2)
+  end
+
   it "handles empty examples array" do
     file = Tempfile.new(["empty", ".json"])
     file.write('{"examples": []}')
     file.close
 
-    expect(described_class.parse(file.path)).to eq([])
+    expect(described_class.parse(file.path).test_cases).to be_empty
   end
 end

@@ -37,8 +37,8 @@ module TestBudget
     end
 
     def add_to_allowlist(locator, reason:)
-      test_cases = Parser::Rspec.parse(timings_path)
-      test_case = TestCase.find_by_location!(test_cases, locator)
+      test_run = Parser::Rspec.parse(timings_path)
+      test_case = TestCase.find_by_location!(test_run.test_cases, locator)
 
       allowlist.add(test_case.key, reason: reason).tap { save }
     end
