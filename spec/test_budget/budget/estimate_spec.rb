@@ -40,7 +40,7 @@ RSpec.describe TestBudget::Budget::Estimate do
         end
       end
 
-      it "derives per-test-case budgets from p95 with buffer" do
+      it "derives per-test-case budgets from p99 with buffer" do
         model_durations = [1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0,
           2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 3.0]
         examples = model_durations.each_with_index.map do |d, i|
@@ -51,9 +51,9 @@ RSpec.describe TestBudget::Budget::Estimate do
           described_class.new(timings_path: timings_path, output: output).generate
 
           config = YAML.safe_load_file(".test_budget.yml")
-          # p95 of 1.0..3.0 (21 items): index 19.0, value 2.9
-          # with 10% buffer: 2.9 * 1.1 = 3.19, ceil to 1 decimal = 3.2
-          expect(config["per_test_case"]["model"]).to eq(3.2)
+          # p99 of 1.0..3.0 (21 items): index 19.8, value 2.98
+          # with 10% buffer: 2.98 * 1.1 = 3.278, * 2 = 6.556, ceil = 7, / 2 = 3.5
+          expect(config["per_test_case"]["model"]).to eq(3.5)
         end
       end
 

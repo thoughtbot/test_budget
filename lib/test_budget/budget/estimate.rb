@@ -6,7 +6,7 @@ module TestBudget
   class Budget
     class Estimate
       DEFAULT_TIMINGS_PATH = "tmp/test_timings.json"
-      BUFFER = 0.10
+      TOLERANCE = 0.10
       PER_TEST_CASE_DEFAULTS = {"default" => 3, "system" => 6, "request" => 3, "model" => 1.5}.freeze
 
       def initialize(output:, timings_path: nil, force: false)
@@ -37,7 +37,7 @@ module TestBudget
 
       def generate_from_results
         test_run = Parser::Rspec.parse(@timings_path)
-        suite_budget = (test_run.suite_duration * (1 + BUFFER)).ceil
+        suite_budget = (test_run.suite_duration * (1 + TOLERANCE)).ceil
         per_test_case_limits = derive_per_test_case(test_run.test_cases)
 
         budget = build_budget(
@@ -70,12 +70,12 @@ module TestBudget
         )
       end
 
-      def derive_per_test_case(test_run)
-        grouped = test_run.group_by { |tc| tc.type.to_s }
+      def derive_per_test_case(test_cases)
+        grouped = test_cases.group_by { |tc| tc.type.to_s }
 
         PER_TEST_CASE_DEFAULTS.merge(
           grouped.transform_values { |cases|
-            Statistics.percentile_95(cases.map(&:duration), buffer: BUFFER)
+            Statistics.p99(cases.map(&:duration), tolerance: TOLERANCE)
           }
         )
       end

@@ -75,8 +75,8 @@ Generate a starter config from an existing RSpec JSON results file:
 bundle exec test_budget init tmp/test_timings.json
 ```
 
-This derives suite and per-test-case budgets from your actual test data (95th
-percentile + 10% buffer). If you don't have a results file yet, run without
+This derives suite and per-test-case budgets from your actual test data (99th
+percentile + 10% tolerance, rounded to the nearest 0.5s). If you don't have a results file yet, run without
 arguments to generate a config with sensible defaults:
 
 ```bash
