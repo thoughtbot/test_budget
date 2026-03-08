@@ -25,9 +25,8 @@ gem "test_budget"
 
 ## Generate RSpec JSON output
 
-> [!TIP]
-> You can skip this step and run `test_budget init` without a results file to
-> get started with sensible defaults right away.
+> [!TIP] You can skip this step and run `test_budget init` without a results
+> file to get started with Rails defaults right away.
 
 Add to your RSpec configuration or CI command:
 
@@ -43,7 +42,7 @@ bundle exec rspec --format progress --format json --out tmp/test_timings.json
 
 ### Parallel test runners
 
-If you use [`parallel_tests`](https://github.com/grosser/parallel_tests),
+If you use [`parallel_tests`][parallel_tests],
 `$TEST_ENV_NUMBER` in command arguments is replaced per worker (empty string for
 worker 1, `2` for worker 2, etc.). Use it to write a separate output file per
 worker:
@@ -59,7 +58,7 @@ etc. Then set your `timings_path` to a glob pattern:
 timings_path: "tmp/test_timings*.json"
 ```
 
-If you use [`flatware`](https://github.com/briandunn/flatware), each worker
+If you use [`flatware`][flatware], each worker
 appends its results to the same output file. Test Budget handles this
 automatically:
 
@@ -76,8 +75,9 @@ bundle exec test_budget init tmp/test_timings.json
 ```
 
 This derives suite and per-test-case budgets from your actual test data (99th
-percentile + 10% tolerance, rounded to the nearest 0.5s). If you don't have a results file yet, run without
-arguments to generate a config with sensible defaults:
+percentile + 10% tolerance, rounded to the nearest 0.5s). If you don't have a
+results file yet, run without arguments to generate a config with Rails
+defaults:
 
 ```bash
 bundle exec test_budget init
@@ -164,17 +164,19 @@ The second step fails the build if any test exceeds its budget.
 
 ## I have violations. Now what?
 
-A violation means a test is slower than you decided it should be. You have
+Violations mean tests are slower than you decided they should be. You have
 options:
 
-- **Make the test faster.** This is the best option. Look for unnecessary setup,
-  N+1 queries, slow external calls that could be stubbed. Can the same behavior
-  be exercised with a faster test type? (e.g. request -> model)
-- **Split the work.** A system test doing too much can often be broken into
+- **Make the tests faster.** This is the best option. Look for unnecessary
+  setup, N+1 queries, slow external calls that could be stubbed. Can the same
+  behavior be exercised with a faster test type? (e.g. system -> request,
+  request -> model)
+- **Split the work.** A test doing too much can often be broken into
   focused scenarios.
-- **Parallelize.** Tools like `parallel_tests` reduce wall time without changing
-  individual test durations, but consider also setting per-test budgets to keep
-  individual tests honest.
+- **Parallelize.** Tools like [`parallel_tests`][parallel_tests] and
+  [`flatware`][flatware] reduce wall time without changing individual test
+  durations, but consider also setting per-test budgets to keep individual tests
+  honest.
 - **Upgrade infrastructure.** Faster CI (or developer) machines buy time.
 - **Allowlist temporarily.** If a fix isn't immediate, add the test to the
   allowlist and create a ticket. This keeps the budget enforced for everything
@@ -210,3 +212,6 @@ We love open source software! See [our other projects][community]. We are
 [hire]: https://thoughtbot.com/hire-us?utm_source=github&utm_medium=readme&utm_campaign=test_budget
 
 <!-- END /templates/footer.md -->
+
+[parallel_tests]: https://github.com/grosser/parallel_tests
+[flatware]: https://github.com/briandunn/flatware
