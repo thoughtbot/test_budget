@@ -6,7 +6,7 @@ RSpec.describe TestBudget::Auditor do
   end
 
   def make_test_run(test_cases)
-    TestBudget::Parser::Rspec::TestRun.new([test_cases])
+    TestBudget::TestRun.new(test_cases: test_cases, suite_duration: test_cases.sum(&:duration))
   end
 
   it "returns per_test_case violations" do

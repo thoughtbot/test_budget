@@ -23,6 +23,16 @@ module TestBudget
       "#{file} -- #{name}"
     end
 
+    def over?(budget)
+      return if budget.allowed?(self)
+
+      limit = budget.limit_for(self)
+      return unless limit
+      return if duration <= limit
+
+      Violation.new(test_case: self, duration: duration, limit: limit, kind: :per_test_case)
+    end
+
     def self.find_by_location!(test_cases, locator)
       file, line = parse_locator(locator)
       match = test_cases.find { |tc| tc.file == file && tc.line_number == line }

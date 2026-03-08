@@ -36,6 +36,10 @@ module TestBudget
       allowlist.allowed?(test_case.key)
     end
 
+    def limit_for(test_case)
+      per_test_case.types[test_case.type] || per_test_case.default
+    end
+
     def add_to_allowlist(locator, reason:)
       test_run = Parser::Rspec.parse(timings_path)
       test_case = TestCase.find_by_location!(test_run.test_cases, locator)

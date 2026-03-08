@@ -5,15 +5,6 @@ require "json"
 module TestBudget
   module Parser
     module Rspec
-      class TestRun
-        attr_reader :test_cases, :suite_duration
-
-        def initialize(groups)
-          @test_cases = groups.flatten
-          @suite_duration = groups.map { |g| g.sum(&:duration) }.max || 0
-        end
-      end
-
       extend self
 
       def parse(pattern)
@@ -21,7 +12,10 @@ module TestBudget
         raise TestBudget::Error, "No timing files found matching: #{pattern}" if paths.empty?
 
         groups = paths.flat_map { |path| parse_file(path) }
-        TestRun.new(groups)
+        TestRun.new(
+          test_cases: groups.flatten,
+          suite_duration: groups.map { |g| g.sum(&:duration) }.max || 0
+        )
       end
 
       private
