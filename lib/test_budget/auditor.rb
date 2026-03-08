@@ -7,7 +7,7 @@ module TestBudget
     end
 
     def audit(test_run)
-      violations = test_run.test_cases.filter_map { |tc| tc.over?(@budget) }
+      violations = test_run.test_cases.filter_map { |it| it.violation_for(@budget) }
       violations << test_run.over?(@budget)
       violations.compact
     end

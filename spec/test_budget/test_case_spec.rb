@@ -56,54 +56,42 @@ RSpec.describe TestBudget::TestCase do
   describe "#over?" do
     let(:budget) { build_budget(per_test_case: {default: 5, types: {model: 2}}) }
 
-    it "returns nil when under budget" do
+    it "returns false when under budget" do
       test_case = described_class.new(
         file: "spec/models/user_spec.rb", name: "example",
         duration: 1.5, status: "passed", line_number: 1
       )
-      expect(test_case.over?(budget)).to be_nil
+      expect(test_case.over?(budget)).to be false
     end
 
-    it "returns violation when over budget" do
+    it "returns true when over budget" do
       test_case = described_class.new(
         file: "spec/models/user_spec.rb", name: "example",
         duration: 2.5, status: "passed", line_number: 1
       )
-      violation = test_case.over?(budget)
-
-      expect(violation).to be_a(TestBudget::Violation)
-      expect(violation.kind).to eq(:per_test_case)
-      expect(violation.limit).to eq(2)
-      expect(violation.duration).to eq(2.5)
+      expect(test_case.over?(budget)).to be true
     end
 
-    it "returns nil when exactly at budget" do
+    it "returns false when exactly at budget" do
       test_case = described_class.new(
         file: "spec/models/user_spec.rb", name: "example",
         duration: 2.0, status: "passed", line_number: 1
       )
-      expect(test_case.over?(budget)).to be_nil
+      expect(test_case.over?(budget)).to be false
     end
 
-    it "uses type-specific limit when available" do
+    it "returns false when no limit is configured" do
+      budget = build_budget(per_test_case: {default: nil})
       test_case = described_class.new(
         file: "spec/models/user_spec.rb", name: "example",
-        duration: 3.0, status: "passed", line_number: 1
+        duration: 10.0, status: "passed", line_number: 1
       )
-      violation = test_case.over?(budget)
-      expect(violation.limit).to eq(2)
+      expect(test_case.over?(budget)).to be false
     end
+  end
 
-    it "falls back to default limit for unknown types" do
-      test_case = described_class.new(
-        file: "spec/lib/utils_spec.rb", name: "example",
-        duration: 6.0, status: "passed", line_number: 1
-      )
-      violation = test_case.over?(budget)
-      expect(violation.limit).to eq(5)
-    end
-
-    it "returns nil when allowlisted" do
+  describe "#exempted?" do
+    it "returns true when allowlisted" do
       budget = build_budget(
         per_test_case: {default: 2},
         allowlist: ["spec/models/user_spec.rb -- example"]
@@ -112,7 +100,103 @@ RSpec.describe TestBudget::TestCase do
         file: "spec/models/user_spec.rb", name: "example",
         duration: 3.0, status: "passed", line_number: 1
       )
-      expect(test_case.over?(budget)).to be_nil
+      expect(test_case.exempted?(budget)).to be true
+    end
+
+    it "returns false when not allowlisted" do
+      budget = build_budget(per_test_case: {default: 2})
+      test_case = described_class.new(
+        file: "spec/models/user_spec.rb", name: "example",
+        duration: 3.0, status: "passed", line_number: 1
+      )
+      expect(test_case.exempted?(budget)).to be false
+    end
+  end
+
+  describe "#violates?" do
+    let(:budget) { build_budget(per_test_case: {default: 5, types: {model: 2}}) }
+
+    it "returns true when over budget and not exempt" do
+      test_case = described_class.new(
+        file: "spec/models/user_spec.rb", name: "example",
+        duration: 2.5, status: "passed", line_number: 1
+      )
+      expect(test_case.violates?(budget)).to be true
+    end
+
+    it "returns false when under budget" do
+      test_case = described_class.new(
+        file: "spec/models/user_spec.rb", name: "example",
+        duration: 1.5, status: "passed", line_number: 1
+      )
+      expect(test_case.violates?(budget)).to be false
+    end
+
+    it "returns false when exempt" do
+      budget = build_budget(
+        per_test_case: {default: 2},
+        allowlist: ["spec/models/user_spec.rb -- example"]
+      )
+      test_case = described_class.new(
+        file: "spec/models/user_spec.rb", name: "example",
+        duration: 3.0, status: "passed", line_number: 1
+      )
+      expect(test_case.violates?(budget)).to be false
+    end
+  end
+
+  describe "#violation_for" do
+    let(:budget) { build_budget(per_test_case: {default: 5, types: {model: 2}}) }
+
+    it "returns Violation when over budget and not exempt" do
+      test_case = described_class.new(
+        file: "spec/models/user_spec.rb", name: "example",
+        duration: 2.5, status: "passed", line_number: 1
+      )
+      violation = test_case.violation_for(budget)
+
+      expect(violation).to be_a(TestBudget::Violation)
+      expect(violation.kind).to eq(:per_test_case)
+      expect(violation.limit).to eq(2)
+      expect(violation.duration).to eq(2.5)
+    end
+
+    it "uses type-specific limit when available" do
+      test_case = described_class.new(
+        file: "spec/models/user_spec.rb", name: "example",
+        duration: 3.0, status: "passed", line_number: 1
+      )
+      violation = test_case.violation_for(budget)
+      expect(violation.limit).to eq(2)
+    end
+
+    it "falls back to default limit for unknown types" do
+      test_case = described_class.new(
+        file: "spec/lib/utils_spec.rb", name: "example",
+        duration: 6.0, status: "passed", line_number: 1
+      )
+      violation = test_case.violation_for(budget)
+      expect(violation.limit).to eq(5)
+    end
+
+    it "returns nil when under budget" do
+      test_case = described_class.new(
+        file: "spec/models/user_spec.rb", name: "example",
+        duration: 1.5, status: "passed", line_number: 1
+      )
+      expect(test_case.violation_for(budget)).to be_nil
+    end
+
+    it "returns nil when exempt" do
+      budget = build_budget(
+        per_test_case: {default: 2},
+        allowlist: ["spec/models/user_spec.rb -- example"]
+      )
+      test_case = described_class.new(
+        file: "spec/models/user_spec.rb", name: "example",
+        duration: 3.0, status: "passed", line_number: 1
+      )
+      expect(test_case.violation_for(budget)).to be_nil
     end
   end
 

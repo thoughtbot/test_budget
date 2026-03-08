@@ -23,14 +23,25 @@ module TestBudget
       "#{file} -- #{name}"
     end
 
+    def violation_for(budget)
+      return unless violates?(budget)
+
+      Violation.new(test_case: self, duration: duration, limit: budget.limit_for(self), kind: :per_test_case)
+    end
+
+    def violates?(budget)
+      over?(budget) && !exempted?(budget)
+    end
+
     def over?(budget)
-      return if budget.allowed?(self)
-
       limit = budget.limit_for(self)
-      return unless limit
-      return if duration <= limit
+      return false if limit.nil?
 
-      Violation.new(test_case: self, duration: duration, limit: limit, kind: :per_test_case)
+      duration > limit
+    end
+
+    def exempted?(budget)
+      budget.exempt?(self)
     end
 
     def self.find_by_location!(test_cases, locator)

@@ -15,7 +15,7 @@ RSpec.describe TestBudget::Budget do
       expect(budget.per_test_case.default).to eq(3)
       expect(budget.per_test_case.types).to eq({system: 10, model: 2})
       slow_test = TestBudget::TestCase.new(file: "spec/models/user_spec.rb", name: "User#slow", duration: 1.0, status: "passed", line_number: 4)
-      expect(budget.allowed?(slow_test)).to be true
+      expect(budget.exempt?(slow_test)).to be true
     end
   end
 

@@ -7,6 +7,8 @@ module TestBudget
     Suite = Data.define(:max_duration)
     PerTestCase = Data.define(:default, :types)
 
+    def self.estimate(...) = Estimate.new(...).generate
+
     def self.load(path)
       config = YAML.safe_load_file(path) || {}
       suite_config = config["suite"] || {}
@@ -32,7 +34,7 @@ module TestBudget
       raise TestBudget::Error, "Budget file not found: #{path}"
     end
 
-    def allowed?(test_case)
+    def exempt?(test_case)
       allowlist.allowed?(test_case.key)
     end
 
@@ -50,8 +52,6 @@ module TestBudget
     def limits_set?
       suite.max_duration || per_test_case.default || per_test_case.types.any?
     end
-
-    def self.estimate(...) = Estimate.new(...).generate
 
     def save
       File.write(path, YAML.dump(to_h))
