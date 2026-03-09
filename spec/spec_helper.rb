@@ -1,5 +1,13 @@
 # frozen_string_literal: true
 
+if ENV["COVERAGE"]
+  require "simplecov"
+  SimpleCov.start do
+    enable_coverage :branch
+    add_filter "/spec/"
+  end
+end
+
 require "test_budget"
 require_relative "support/file_helpers"
 require_relative "support/factory"
