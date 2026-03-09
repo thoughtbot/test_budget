@@ -25,7 +25,8 @@ gem "test_budget"
 
 ## Generate RSpec JSON output
 
-> [!TIP] You can skip this step and run `test_budget init` without a results
+> [!TIP]
+> You can skip this step and run `test_budget init` without a results
 > file to get started with Rails defaults right away.
 
 Add to your RSpec configuration or CI command:
