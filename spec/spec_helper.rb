@@ -2,6 +2,7 @@
 
 require "test_budget"
 require_relative "support/file_helpers"
+require_relative "support/factory"
 
 RSpec.configure do |config|
   config.example_status_persistence_file_path = ".rspec_status"
@@ -12,4 +13,5 @@ RSpec.configure do |config|
   end
 
   config.include FileHelpers
+  config.include Factory
 end

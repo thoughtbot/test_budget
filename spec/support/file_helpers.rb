@@ -5,21 +5,6 @@ require "yaml"
 require "json"
 
 module FileHelpers
-  def build_budget(per_test_case: nil, suite: nil, allowlist: [])
-    TestBudget::Budget.new(
-      path: nil,
-      timings_path: nil,
-      suite: TestBudget::Budget::Suite.new(max_duration: suite&.dig(:max_duration)),
-      per_test_case: TestBudget::Budget::PerTestCase.new(
-        default: per_test_case&.dig(:default),
-        types: per_test_case&.dig(:types) || {}
-      ),
-      allowlist: TestBudget::Allowlist.new(
-        allowlist.map { |key| {"test_case" => key, "reason" => "test"} }
-      )
-    )
-  end
-
   def write_budget_file(data, &block)
     with_tempfile([".test_budget", ".yml"], data.to_yaml, &block)
   end
