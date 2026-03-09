@@ -6,7 +6,7 @@ module TestBudget
       if kind == :suite
         "Suite total time (%.2fs) exceeds limit (%.2fs)" % [duration, limit]
       else
-        "#{test_case.key} (%.2fs) exceeds #{test_case.type} limit (%.2fs)" % [duration, limit]
+        format("%s (%.2fs) exceeds %s limit (%.2fs)", test_case.key, duration, test_case.type, limit)
       end
     end
 
