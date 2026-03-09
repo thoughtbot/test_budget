@@ -1,21 +1,27 @@
 # frozen_string_literal: true
 
+require "date"
+
 module TestBudget
   class Allowlist
     def initialize(raw_entries = [])
       @entries = raw_entries.map do |entry|
-        Entry.new(test_case_key: entry["test_case"], reason: entry["reason"])
+        Entry.new(
+          test_case_key: entry["test_case"],
+          reason: entry["reason"],
+          expires_on: parse_date(entry["expires_on"])
+        )
       end
     end
 
     def allowed?(key)
-      @entries.any? { |e| e.matches?(key) }
+      @entries.find { |e| e.matches?(key) }
     end
 
-    def add(key, reason:)
+    def add(key, reason:, expires_on:)
       raise Error, "#{key} is already allowlisted" if allowed?(key)
 
-      entry = Entry.new(test_case_key: key, reason: reason)
+      entry = Entry.new(test_case_key: key, reason: reason, expires_on: expires_on)
       @entries << entry
       entry
     end
@@ -29,7 +35,17 @@ module TestBudget
       @entries.dup
     end
 
-    Entry = Data.define(:test_case_key, :reason) do
+    private
+
+    def parse_date(raw)
+      Date.parse(raw.to_s)
+    rescue Date::Error, TypeError
+      raise Error, "expires_on is required and must be a valid date (YYYY-MM-DD)"
+    end
+
+    Entry = Data.define(:test_case_key, :reason, :expires_on) do
+      def expired? = Date.today > expires_on
+
       def matches?(key)
         test_case_key == key
       end
@@ -45,7 +61,7 @@ module TestBudget
       end
 
       def to_h
-        {"test_case" => test_case_key, "reason" => reason}
+        {"test_case" => test_case_key, "reason" => reason, "expires_on" => expires_on.to_s}
       end
     end
   end

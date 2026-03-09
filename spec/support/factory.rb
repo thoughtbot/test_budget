@@ -11,7 +11,7 @@ module Factory
         types: per_test_case&.dig(:types) || {}
       ),
       allowlist: TestBudget::Allowlist.new(
-        allowlist.map { |key| {"test_case" => key, "reason" => "test"} }
+        allowlist.map { |key| {"test_case" => key, "reason" => "test", "expires_on" => (Date.today + 365).to_s} }
       )
     )
   end
@@ -42,7 +42,7 @@ module Factory
     TestBudget::Warning.new(entry: entry, kind: kind)
   end
 
-  def build_entry(test_case_key: "spec/models/user_spec.rb -- User is valid", reason: "legacy test")
-    TestBudget::Allowlist::Entry.new(test_case_key: test_case_key, reason: reason)
+  def build_entry(test_case_key: "spec/models/user_spec.rb -- User is valid", reason: "legacy test", expires_on: Date.today + 365)
+    TestBudget::Allowlist::Entry.new(test_case_key: test_case_key, reason: reason, expires_on: expires_on)
   end
 end

@@ -105,13 +105,14 @@ per_test_case:
 allowlist:
   - test_case: "spec/services/invoice_pdf_spec.rb -- generates PDF with line items"
     reason: "PDF generation is inherently slow, tracking in JIRA-1234"
+    expires_on: "2025-06-01"
 ```
 
 - **`timings_path`** (required) — path (or glob pattern) to the RSpec JSON output file(s).
 - **`suite.max_duration`** — total duration budget for the entire suite.
 - **`per_test_case.default`** — default per-test limit. Applies to any type without a specific limit.
 - **`per_test_case.<type>`** — per-test limit for a specific type. Types are inferred from file paths by singularizing the directory name (`spec/models/` -> `model`, `spec/features/` -> `feature`, `spec/system/` -> `system`, etc).
-- **`allowlist`** — known slow tests to skip. Use this as a temporary escape hatch, not a permanent solution.
+- **`allowlist`** — known slow tests to skip. Each entry requires an `expires_on` date (YYYY-MM-DD). Expired entries stop exempting their tests. Use this as a temporary escape hatch, not a permanent solution.
 
 > [!IMPORTANT]
 > At least one limit (`suite.max_duration`, `per_test_case.default`, or a type-specific limit) must be configured.
@@ -137,6 +138,9 @@ You can allowlist individual tests via the CLI:
 ```bash
 bundle exec test_budget allowlist spec/models/user_spec.rb:10 --reason "Tracking in JIRA-1234"
 ```
+
+Entries are created with a 60-day expiration by default. Edit the `expires_on`
+date in the YAML file if you need a different window.
 
 ### Pruning obsolete entries
 

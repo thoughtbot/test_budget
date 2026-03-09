@@ -6,7 +6,7 @@ RSpec.describe TestBudget::Budget do
       "timings_path" => "tmp/results.json",
       "suite" => {"max_duration" => 600},
       "per_test_case" => {"default" => 3, "system" => 10, "model" => 2},
-      "allowlist" => [{"test_case" => "spec/models/user_spec.rb -- User#slow", "reason" => "Legacy test"}]
+      "allowlist" => [{"test_case" => "spec/models/user_spec.rb -- User#slow", "reason" => "Legacy test", "expires_on" => (Date.today + 365).to_s}]
     ) do |path|
       budget = described_class.load(path)
 
@@ -94,6 +94,29 @@ RSpec.describe TestBudget::Budget do
     end
   end
 
+  describe "#exempt?" do
+    it "returns false when entry is expired" do
+      budget = build_budget(per_test_case: {default: 2})
+      expired_entry = build_entry(test_case_key: "spec/models/user_spec.rb -- example", expires_on: Date.today - 1)
+      budget.allowlist.instance_variable_get(:@entries) << expired_entry
+
+      test_case = build_test_case(duration: 3.0)
+
+      expect(budget.exempt?(test_case)).to be false
+    end
+
+    it "returns true when entry is not expired" do
+      budget = build_budget(
+        per_test_case: {default: 2},
+        allowlist: ["spec/models/user_spec.rb -- example"]
+      )
+
+      test_case = build_test_case(duration: 3.0)
+
+      expect(budget.exempt?(test_case)).to be true
+    end
+  end
+
   describe "#prune_allowlist" do
     def budget_with_results(allowlist: [])
       write_timings_file([
@@ -114,8 +137,8 @@ RSpec.describe TestBudget::Budget do
     it "removes obsolete entries and saves file" do
       budget_with_results(
         allowlist: [
-          {"test_case" => "spec/models/old_spec.rb -- gone test", "reason" => "Stale"},
-          {"test_case" => "spec/models/user_spec.rb -- User is valid", "reason" => "Within budget now"}
+          {"test_case" => "spec/models/old_spec.rb -- gone test", "reason" => "Stale", "expires_on" => (Date.today + 365).to_s},
+          {"test_case" => "spec/models/user_spec.rb -- User is valid", "reason" => "Within budget now", "expires_on" => (Date.today + 365).to_s}
         ]
       ) do |budget|
         removed = budget.prune_allowlist
@@ -135,7 +158,7 @@ RSpec.describe TestBudget::Budget do
           "timings_path" => timings_path,
           "per_test_case" => {"default" => 5},
           "allowlist" => [
-            {"test_case" => "spec/models/user_spec.rb -- User is valid", "reason" => "Still needed"}
+            {"test_case" => "spec/models/user_spec.rb -- User is valid", "reason" => "Still needed", "expires_on" => (Date.today + 365).to_s}
           ]
         ) do |path|
           budget = described_class.load(path)
@@ -174,18 +197,20 @@ RSpec.describe TestBudget::Budget do
         expect(entry).to be_a(TestBudget::Allowlist::Entry)
         expect(entry.test_case_key).to eq("spec/models/user_spec.rb -- User is valid")
         expect(entry.reason).to eq("Legacy test")
+        expect(entry.expires_on).to eq(Date.today + TestBudget::Budget::DEFAULT_EXPIRATION_DAYS)
         config = YAML.safe_load_file(budget.path)
         expect(config["allowlist"].size).to eq(1)
         expect(config["allowlist"].first).to eq(
           "test_case" => "spec/models/user_spec.rb -- User is valid",
-          "reason" => "Legacy test"
+          "reason" => "Legacy test",
+          "expires_on" => (Date.today + TestBudget::Budget::DEFAULT_EXPIRATION_DAYS).to_s
         )
       end
     end
 
     it "appends to existing allowlist entries" do
       budget_with_results(
-        allowlist: [{"test_case" => "spec/models/post_spec.rb -- Post is valid", "reason" => "Slow by design"}]
+        allowlist: [{"test_case" => "spec/models/post_spec.rb -- Post is valid", "reason" => "Slow by design", "expires_on" => (Date.today + 365).to_s}]
       ) do |budget|
         budget.add_to_allowlist("spec/models/user_spec.rb:4", reason: "Legacy test")
 

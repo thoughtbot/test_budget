@@ -32,6 +32,18 @@ RSpec.describe TestBudget::Auditor do
     expect(result.violations).to be_empty
   end
 
+  it "does not filter violations when allowlist entry is expired" do
+    budget = build_budget(per_test_case: {default: 2})
+    expired_entry = build_entry(test_case_key: "spec/models/user_spec.rb -- example", expires_on: Date.today - 1)
+    budget.allowlist.instance_variable_get(:@entries) << expired_entry
+    auditor = described_class.new(budget)
+
+    result = auditor.audit(build_test_run([build_test_case(duration: 3.0)]))
+
+    expect(result.violations.size).to eq(1)
+    expect(result.violations.first.kind).to eq(:per_test_case)
+  end
+
   it "returns empty when all pass" do
     budget = build_budget(per_test_case: {default: 10})
     auditor = described_class.new(budget)

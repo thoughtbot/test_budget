@@ -1,9 +1,12 @@
 # frozen_string_literal: true
 
+require "date"
 require "yaml"
 
 module TestBudget
   class Budget < Data.define(:path, :timings_path, :suite, :per_test_case, :allowlist)
+    DEFAULT_EXPIRATION_DAYS = 60
+
     Suite = Data.define(:max_duration)
     PerTestCase = Data.define(:default, :types)
 
@@ -35,7 +38,9 @@ module TestBudget
     end
 
     def exempt?(test_case)
-      allowlist.allowed?(test_case.key)
+      entry = allowlist.allowed?(test_case.key)
+
+      entry && !entry.expired?
     end
 
     def limit_for(test_case)
@@ -46,7 +51,7 @@ module TestBudget
       test_run = Parser::Rspec.parse(timings_path)
       test_case = TestCase.find_by_location!(test_run.test_cases, locator)
 
-      allowlist.add(test_case.key, reason: reason).tap { save }
+      allowlist.add(test_case.key, reason: reason, expires_on: Date.today + DEFAULT_EXPIRATION_DAYS).tap { save }
     end
 
     def prune_allowlist

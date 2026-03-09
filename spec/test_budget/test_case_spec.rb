@@ -103,13 +103,13 @@ RSpec.describe TestBudget::TestCase do
       expect(test_case.exempted?(budget)).to be true
     end
 
-    it "returns false when not allowlisted" do
+    it "returns falsey value when not allowlisted" do
       budget = build_budget(per_test_case: {default: 2})
       test_case = described_class.new(
         file: "spec/models/user_spec.rb", name: "example",
         duration: 3.0, status: "passed", line_number: 1
       )
-      expect(test_case.exempted?(budget)).to be false
+      expect(test_case.exempted?(budget)).to be_falsey
     end
   end
 

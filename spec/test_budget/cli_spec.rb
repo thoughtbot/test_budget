@@ -135,6 +135,7 @@ RSpec.describe TestBudget::CLI do
           config = YAML.safe_load_file(budget_path)
           expect(config["allowlist"].first["test_case"]).to eq("spec/models/user_spec.rb -- User is valid")
           expect(config["allowlist"].first["reason"]).to eq("Legacy test")
+          expect(config["allowlist"].first["expires_on"]).to eq((Date.today + TestBudget::Budget::DEFAULT_EXPIRATION_DAYS).to_s)
         end
       end
     end
@@ -206,7 +207,7 @@ RSpec.describe TestBudget::CLI do
           "timings_path" => timings_path,
           "per_test_case" => {"default" => 5},
           "allowlist" => [
-            {"test_case" => "spec/models/old_spec.rb -- gone test", "reason" => "Stale"}
+            {"test_case" => "spec/models/old_spec.rb -- gone test", "reason" => "Stale", "expires_on" => (Date.today + 365).to_s}
           ]
         ) do |budget_path|
           exit_code = nil
@@ -231,7 +232,7 @@ RSpec.describe TestBudget::CLI do
           "timings_path" => timings_path,
           "per_test_case" => {"default" => 5},
           "allowlist" => [
-            {"test_case" => "spec/models/user_spec.rb -- User is valid", "reason" => "Still slow"}
+            {"test_case" => "spec/models/user_spec.rb -- User is valid", "reason" => "Still slow", "expires_on" => (Date.today + 365).to_s}
           ]
         ) do |budget_path|
           exit_code = nil
