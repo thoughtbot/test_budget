@@ -17,7 +17,7 @@ module TestBudget
       in "audit" then run_audit(args)
       in "allowlist" then run_allowlist(args)
       in "prune" then run_prune(args)
-      in "init" then run_init(args)
+      in "init" | "estimate" then run_init(args)
       in "help" then print_help
       end
     rescue ArgumentParser::ParseError, TestBudget::Error, OptionParser::MissingArgument => e
@@ -29,8 +29,7 @@ module TestBudget
 
     def command_parser
       ArgumentParser.build do
-        required :command, pattern: {"audit" => "audit", "allowlist" => "allowlist", "prune" => "prune",
-                                     "init" => "init", "estimate" => "init", "help" => "help"}
+        required :command, pattern: ["audit", "allowlist", "prune", "init", "estimate", "help"]
       end
     end
 
