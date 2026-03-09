@@ -327,6 +327,15 @@ RSpec.describe TestBudget::CLI do
       expect(exit_code).to eq(1)
     end
 
+    it "accepts 'estimate' as an alias" do
+      exit_code = nil
+      expect { exit_code = cli.call(["estimate"]) }
+        .to output(/Created/).to_stdout
+
+      expect(exit_code).to eq(0)
+      expect(File.exist?(".test_budget.yml")).to be true
+    end
+
     it "returns 1 when config exists without --force" do
       File.write(".test_budget.yml", "existing: config")
 

@@ -42,6 +42,12 @@ bundle exec test_budget init
 
 Use `--force` to overwrite an existing `.test_budget.yml`.
 
+`estimate` is an alias for `init`. Use whichever name feels right:
+
+```bash
+bundle exec test_budget estimate tmp/test_timings.json
+```
+
 Then run the audit after your tests:
 
 ```bash

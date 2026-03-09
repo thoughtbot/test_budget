@@ -29,7 +29,8 @@ module TestBudget
 
     def command_parser
       ArgumentParser.build do
-        required :command, pattern: %w[audit allowlist prune init help]
+        required :command, pattern: {"audit" => "audit", "allowlist" => "allowlist", "prune" => "prune",
+                                     "init" => "init", "estimate" => "init", "help" => "help"}
       end
     end
 
@@ -52,6 +53,7 @@ module TestBudget
           allowlist   Exclude a test from budget checks
           prune       Remove obsolete allowlist entries
           init        Generate starter .test_budget.yml config
+          estimate    Alias for init
           help        Show this help message
 
         Options:
