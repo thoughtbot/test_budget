@@ -17,7 +17,7 @@ before it gets worse.
 Add to your Gemfile:
 
 ```ruby
-gem "test_budget", github: "thoughtbot/test_budget"
+gem "test_budget"
 ```
 
 > [!NOTE]
