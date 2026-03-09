@@ -162,6 +162,14 @@ RSpec.describe TestBudget::CLI do
       end
     end
 
+    it "returns 1 when locator is missing" do
+      exit_code = nil
+      expect { exit_code = cli.call(["allowlist", "--reason", "test"]) }
+        .to output(/locator.*is required/).to_stderr
+
+      expect(exit_code).to eq(1)
+    end
+
     it "handles missing option arguments" do
       exit_code = nil
       expect { exit_code = cli.call(["allowlist", "spec/models/user_spec.rb:4", "--reason"]) }
