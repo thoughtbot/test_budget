@@ -18,7 +18,7 @@ RSpec.describe TestBudget::Audit do
         audit = described_class.new(budget_path: budget_path, output: output)
         result = audit.perform
 
-        expect(result).to eq(true)
+        expect(result).to be_passed
         expect(output.string).to include("all clear")
       end
     end
@@ -39,7 +39,7 @@ RSpec.describe TestBudget::Audit do
         audit = described_class.new(budget_path: budget_path, output: output)
         result = audit.perform
 
-        expect(result).to eq(false)
+        expect(result).not_to be_passed
         expect(output.string).to include("violation")
       end
     end

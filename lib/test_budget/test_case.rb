@@ -29,15 +29,15 @@ module TestBudget
       Violation.new(test_case: self, duration: duration, limit: budget.limit_for(self), kind: :per_test_case)
     end
 
-    def violates?(budget)
-      over?(budget) && !exempted?(budget)
-    end
+    def violates?(budget) = over?(budget) && !exempted?(budget)
 
-    def over?(budget)
+    def over?(budget) = !within?(budget)
+
+    def within?(budget)
       limit = budget.limit_for(self)
-      return false if limit.nil?
+      return true if limit.nil?
 
-      duration > limit
+      duration <= limit
     end
 
     def exempted?(budget)

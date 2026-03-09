@@ -71,9 +71,9 @@ module TestBudget
         opts.on("--budget PATH", "Path to budget file") { |path| budget_path = path }
       end.parse!(args)
 
-      passed = Audit.new(budget_path: budget_path, output: @output).perform
+      result = Audit.new(budget_path: budget_path, output: @output).perform
 
-      passed ? 0 : 1
+      result.passed? ? 0 : 1
     end
 
     def run_allowlist(args)

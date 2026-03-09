@@ -2,6 +2,10 @@
 
 module TestBudget
   class Audit
+    Result = Data.define(:violations, :warnings) do
+      def passed? = violations.empty?
+    end
+
     def initialize(budget_path:, output:)
       @budget_path = budget_path
       @output = output
@@ -10,10 +14,10 @@ module TestBudget
     def perform
       budget = Budget.load(@budget_path)
       test_run = Parser::Rspec.parse(budget.timings_path)
-      violations = Auditor.new(budget).audit(test_run)
-      Reporter.new(output: @output, budget_path: @budget_path).report(violations)
+      result = Auditor.new(budget).audit(test_run)
+      Reporter.new(output: @output, budget_path: @budget_path).report(result)
 
-      violations.empty?
+      result
     end
   end
 end

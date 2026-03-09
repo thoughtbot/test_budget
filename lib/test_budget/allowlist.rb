@@ -29,6 +29,16 @@ module TestBudget
         test_case_key == key
       end
 
+      def obsolete?(test_run, budget)
+        test_case = test_run.test_cases.find { |tc| tc.key == test_case_key }
+
+        if test_case.nil?
+          :stale
+        elsif test_case.within?(budget)
+          :unnecessary
+        end
+      end
+
       def to_h
         {"test_case" => test_case_key, "reason" => reason}
       end
