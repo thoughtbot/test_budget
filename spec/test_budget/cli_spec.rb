@@ -45,6 +45,27 @@ RSpec.describe TestBudget::CLI do
     end
   end
 
+  it "returns 0 with --tolerant when borderline violation is within 10%" do
+    write_timings_file([
+      {
+        "file_path" => "spec/models/user_spec.rb",
+        "full_description" => "User is valid",
+        "run_time" => 5.4, "status" => "passed"
+      }
+    ]) do |timings_path|
+      write_budget_file(
+        "timings_path" => timings_path,
+        "per_test_case" => {"default" => 5}
+      ) do |budget_path|
+        exit_code = nil
+        expect { exit_code = cli.call(["audit", "--budget", budget_path, "--tolerant"]) }
+          .to output(/all clear/).to_stdout
+
+        expect(exit_code).to eq(0)
+      end
+    end
+  end
+
   describe "help" do
     it "prints help and returns 0 for 'help' command" do
       exit_code = nil

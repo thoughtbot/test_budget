@@ -53,6 +53,54 @@ RSpec.describe TestBudget::Auditor do
     expect(result.violations).to be_empty
   end
 
+  describe "tolerant mode" do
+    it "passes when duration is exactly at the inflated boundary" do
+      budget = build_budget(per_test_case: {default: 2})
+      auditor = described_class.new(budget, tolerant: true)
+
+      result = auditor.audit(build_test_run([build_test_case(duration: 2.2)]))
+
+      expect(result.violations).to be_empty
+    end
+
+    it "reports violation when duration exceeds the inflated boundary" do
+      budget = build_budget(per_test_case: {default: 2})
+      auditor = described_class.new(budget, tolerant: true)
+
+      result = auditor.audit(build_test_run([build_test_case(duration: 2.3)]))
+
+      expect(result.violations.size).to eq(1)
+      expect(result.violations.first.kind).to eq(:per_test_case)
+    end
+
+    it "reports violation when duration clearly exceeds the limit" do
+      budget = build_budget(per_test_case: {default: 2})
+      auditor = described_class.new(budget, tolerant: true)
+
+      result = auditor.audit(build_test_run([build_test_case(duration: 3.0)]))
+
+      expect(result.violations.size).to eq(1)
+    end
+
+    it "passes when suite duration is exactly at the inflated boundary" do
+      budget = build_budget(suite: {max_duration: 5}, per_test_case: {default: 100})
+      auditor = described_class.new(budget, tolerant: true)
+
+      result = auditor.audit(build_test_run([build_test_case(duration: 5.5)]))
+
+      expect(result.violations).to be_empty
+    end
+
+    it "reports violation when suite duration exceeds the inflated boundary" do
+      budget = build_budget(suite: {max_duration: 5}, per_test_case: {default: 100})
+      auditor = described_class.new(budget, tolerant: true)
+
+      result = auditor.audit(build_test_run([build_test_case(duration: 5.6)]))
+
+      expect(result.violations.map(&:kind)).to include(:suite)
+    end
+  end
+
   describe "warnings" do
     it "returns stale warning when allowlist entry has no matching test case" do
       budget = build_budget(

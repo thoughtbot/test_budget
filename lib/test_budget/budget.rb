@@ -61,6 +61,18 @@ module TestBudget
       removed
     end
 
+    def inflate_by(percent)
+      factor = 1 + percent
+
+      with(
+        suite: Suite.new(max_duration: suite.max_duration&.*(factor)),
+        per_test_case: PerTestCase.new(
+          default: per_test_case.default&.*(factor),
+          types: per_test_case.types.transform_values { |v| v * factor }
+        )
+      )
+    end
+
     def limits_set?
       suite.max_duration || per_test_case.default || per_test_case.types.any?
     end

@@ -62,13 +62,15 @@ module TestBudget
 
     def run_audit(args)
       budget_path = DEFAULT_BUDGET_PATH
+      tolerant = false
 
       OptionParser.new do |opts|
         opts.banner = "Usage: test_budget audit [options]"
         opts.on("--budget PATH", "Path to budget file") { |path| budget_path = path }
+        opts.on("--tolerant", "Apply 10% tolerance to limits") { tolerant = true }
       end.parse!(args)
 
-      result = Audit.new(budget_path: budget_path).perform
+      result = Audit.new(budget_path: budget_path, tolerant: tolerant).perform
 
       result.passed? ? 0 : 1
     end

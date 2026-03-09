@@ -94,6 +94,54 @@ RSpec.describe TestBudget::Budget do
     end
   end
 
+  describe "#inflate_by" do
+    it "inflates suite max_duration by the given percent" do
+      budget = build_budget(suite: {max_duration: 10}, per_test_case: {default: 2})
+
+      inflated = budget.inflate_by(0.1)
+
+      expect(inflated.suite.max_duration).to eq(11.0)
+    end
+
+    it "inflates per_test_case default by the given percent" do
+      budget = build_budget(per_test_case: {default: 2})
+
+      inflated = budget.inflate_by(0.1)
+
+      expect(inflated.per_test_case.default).to eq(2.2)
+    end
+
+    it "inflates per_test_case types values by the given percent" do
+      budget = build_budget(per_test_case: {default: 2, types: {system: 10, model: 5}})
+
+      inflated = budget.inflate_by(0.1)
+
+      expect(inflated.per_test_case.types).to eq({system: 11.0, model: 5.5})
+    end
+
+    it "handles nil limits" do
+      budget = build_budget(per_test_case: {default: 2})
+
+      inflated = budget.inflate_by(0.1)
+
+      expect(inflated.suite.max_duration).to be_nil
+      expect(inflated.per_test_case.default).to eq(2.2)
+    end
+
+    it "preserves allowlist, path, and timings_path unchanged" do
+      budget = build_budget(
+        per_test_case: {default: 2},
+        allowlist: ["spec/models/user_spec.rb -- example"]
+      )
+
+      inflated = budget.inflate_by(0.1)
+
+      expect(inflated.path).to eq(budget.path)
+      expect(inflated.timings_path).to eq(budget.timings_path)
+      expect(inflated.allowlist).to eq(budget.allowlist)
+    end
+  end
+
   describe "#exempt?" do
     it "returns false when entry is expired" do
       budget = build_budget(per_test_case: {default: 2})

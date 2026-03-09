@@ -2,8 +2,10 @@
 
 module TestBudget
   class Auditor
-    def initialize(budget)
-      @budget = budget
+    TOLERANCE = 0.1
+
+    def initialize(budget, tolerant: false)
+      @budget = tolerant ? budget.inflate_by(TOLERANCE) : budget
     end
 
     def audit(test_run)

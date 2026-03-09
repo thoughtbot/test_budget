@@ -145,6 +145,17 @@ Use `--budget` to point to a different config file:
 bundle exec test_budget audit --budget config/test_budget.yml
 ```
 
+Use `--tolerant` to apply a 10% tolerance to all limits. This is useful on
+shared CI infrastructure where CPU contention causes small fluctuations in test
+durations:
+
+```bash
+bundle exec test_budget audit --tolerant
+```
+
+With `--tolerant`, a test only fails if it exceeds the limit by more than 10%
+(e.g., a 5s limit becomes an effective 5.5s limit).
+
 Exit code is `0` when all tests are within budget, `1` when there are violations.
 
 ## Allowlist
