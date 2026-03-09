@@ -1,16 +1,16 @@
 # Test Budget
 
-> You have a time budget for tests. This tool enforces it.
+> Prevent slow tests from creeping into your suite.
 
 Test suites get slow one test at a time. By the time you notice, your CI takes
 40 minutes and nobody wants to touch it.
 
-Test Budget is a post-run audit tool. It reads your test results, checks
-durations against your set budget, and fails if anything is over. Think of it as
-**a linter for test performance**.
+Test Budget is **a linter for test performance**. It reads your test results
+after the run, checks durations against configured budgets, and fails if
+anything goes over.
 
-It doesn't change how your tests run. It just tells you when they're too slow.
-Before it gets worse.
+It doesn't change how your tests run. It just tells you when they're too slow —
+before it gets worse.
 
 ## Install
 
@@ -23,7 +23,42 @@ gem "test_budget"
 > [!NOTE]
 > Test Budget currently supports **RSpec only**. Minitest support is not yet available.
 
-## Generate RSpec JSON output
+## Quick start
+
+Generate a starter config from an existing RSpec JSON results file:
+
+```bash
+bundle exec test_budget init tmp/test_timings.json
+```
+
+When given a results file, `init` derives budgets from your actual data (99th
+percentile + 10% tolerance, rounded to the nearest 0.5s). If you don't have a
+results file yet, run without arguments to generate a config with Rails
+defaults:
+
+```bash
+bundle exec test_budget init
+```
+
+Use `--force` to overwrite an existing `.test_budget.yml`.
+
+Then run the audit after your tests:
+
+```bash
+bundle exec test_budget audit
+```
+
+Example output:
+
+```
+Test budget: 1 violation(s) found
+
+  1) spec/system/signup_spec.rb -- creates account (11.20s) exceeds system limit (6.00s)
+     To allowlist, run:
+     bundle exec test_budget allowlist spec/system/signup_spec.rb:15 --reason "<reason>"
+```
+
+## RSpec JSON results file
 
 > [!TIP]
 > You can skip this step and run `test_budget init` without a results
@@ -59,34 +94,14 @@ etc. Then set your `timings_path` to a glob pattern:
 timings_path: "tmp/test_timings*.json"
 ```
 
-If you use [`flatware`][flatware], each worker
-appends its results to the same output file. Test Budget handles this
-automatically:
+If you use [`flatware`][flatware], each worker appends its results to the same
+output file. Test Budget handles this automatically:
 
 ```bash
 flatware rspec --format json --out tmp/test_timings.json
 ```
 
-## Quick start
-
-Generate a starter config from an existing RSpec JSON results file:
-
-```bash
-bundle exec test_budget init tmp/test_timings.json
-```
-
-This derives suite and per-test-case budgets from your actual test data (99th
-percentile + 10% tolerance, rounded to the nearest 0.5s). If you don't have a
-results file yet, run without arguments to generate a config with Rails
-defaults:
-
-```bash
-bundle exec test_budget init
-```
-
-Use `--force` to overwrite an existing `.test_budget.yml`.
-
-## Configure
+## Configuration
 
 The `init` command creates a `.test_budget.yml` in your project root. You can
 also create one manually:
@@ -118,7 +133,7 @@ allowlist:
 > [!IMPORTANT]
 > At least one limit (`suite.max_duration`, `per_test_case.default`, or a type-specific limit) must be configured.
 
-## Run
+## Audit
 
 ```bash
 bundle exec test_budget audit
