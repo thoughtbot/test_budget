@@ -94,6 +94,62 @@ RSpec.describe TestBudget::Budget do
     end
   end
 
+  describe "#prune_allowlist" do
+    def budget_with_results(allowlist: [])
+      write_timings_file([
+        {"file_path" => "spec/models/user_spec.rb", "full_description" => "User is valid",
+         "run_time" => 1.0, "status" => "passed", "line_number" => 4}
+      ]) do |timings_path|
+        data = {
+          "timings_path" => timings_path,
+          "per_test_case" => {"default" => 5}
+        }
+        data["allowlist"] = allowlist unless allowlist.empty?
+        write_budget_file(data) do |path|
+          yield described_class.load(path)
+        end
+      end
+    end
+
+    it "removes obsolete entries and saves file" do
+      budget_with_results(
+        allowlist: [
+          {"test_case" => "spec/models/old_spec.rb -- gone test", "reason" => "Stale"},
+          {"test_case" => "spec/models/user_spec.rb -- User is valid", "reason" => "Within budget now"}
+        ]
+      ) do |budget|
+        removed = budget.prune_allowlist
+
+        expect(removed.size).to eq(2)
+        config = YAML.safe_load_file(budget.path)
+        expect(config).not_to have_key("allowlist")
+      end
+    end
+
+    it "does not rewrite file when nothing to prune" do
+      write_timings_file([
+        {"file_path" => "spec/models/user_spec.rb", "full_description" => "User is valid",
+         "run_time" => 10.0, "status" => "passed", "line_number" => 4}
+      ]) do |timings_path|
+        write_budget_file(
+          "timings_path" => timings_path,
+          "per_test_case" => {"default" => 5},
+          "allowlist" => [
+            {"test_case" => "spec/models/user_spec.rb -- User is valid", "reason" => "Still needed"}
+          ]
+        ) do |path|
+          budget = described_class.load(path)
+          mtime_before = File.mtime(path)
+
+          removed = budget.prune_allowlist
+
+          expect(removed).to be_empty
+          expect(File.mtime(path)).to eq(mtime_before)
+        end
+      end
+    end
+  end
+
   describe "#add_to_allowlist" do
     def budget_with_results(allowlist: [])
       write_timings_file([

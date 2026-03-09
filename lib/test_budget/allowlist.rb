@@ -20,6 +20,11 @@ module TestBudget
       entry
     end
 
+    def prune(test_run, budget)
+      removed, @entries = @entries.partition { |entry| entry.obsolete?(test_run, budget) }
+      removed
+    end
+
     def to_a
       @entries.dup
     end

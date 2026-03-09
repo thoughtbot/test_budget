@@ -16,6 +16,7 @@ module TestBudget
       case parsed[:command]
       in "audit" then run_audit(args)
       in "allowlist" then run_allowlist(args)
+      in "prune" then run_prune(args)
       in "init" then run_init(args)
       in "help" then print_help
       end
@@ -28,7 +29,7 @@ module TestBudget
 
     def command_parser
       ArgumentParser.build do
-        required :command, pattern: %w[audit allowlist init help]
+        required :command, pattern: %w[audit allowlist prune init help]
       end
     end
 
@@ -49,6 +50,7 @@ module TestBudget
         Commands:
           audit       Check test results against budget
           allowlist   Exclude a test from budget checks
+          prune       Remove obsolete allowlist entries
           init        Generate starter .test_budget.yml config
           help        Show this help message
 
@@ -87,6 +89,25 @@ module TestBudget
 
       entry = Budget.load(budget_path).add_to_allowlist(locator, reason: reason)
       puts "Allowlisted: #{entry.test_case_key}"
+
+      0
+    end
+
+    def run_prune(args)
+      budget_path = DEFAULT_BUDGET_PATH
+
+      OptionParser.new do |opts|
+        opts.banner = "Usage: test_budget prune [options]"
+        opts.on("--budget PATH", "Path to budget file") { |path| budget_path = path }
+      end.parse!(args)
+
+      removed = Budget.load(budget_path).prune_allowlist
+
+      if removed.any?
+        puts "#{removed.size} obsolete allowlist #{(removed.size == 1) ? "entry" : "entries"} removed"
+      else
+        puts "No obsolete allowlist entries found"
+      end
 
       0
     end

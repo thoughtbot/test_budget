@@ -138,6 +138,19 @@ You can allowlist individual tests via the CLI:
 bundle exec test_budget allowlist spec/models/user_spec.rb:10 --reason "Tracking in JIRA-1234"
 ```
 
+### Pruning obsolete entries
+
+Over time, allowlisted tests may be fixed or removed. Use `prune` to clean up
+entries that are no longer needed:
+
+```bash
+bundle exec test_budget prune
+```
+
+This removes **stale** entries (test no longer exists) and **unnecessary** entries
+(test is now within budget). The `audit` command also warns about these entries
+so you know when it's time to prune.
+
 ### Example output
 
 ```

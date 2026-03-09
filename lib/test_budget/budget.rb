@@ -49,6 +49,13 @@ module TestBudget
       allowlist.add(test_case.key, reason: reason).tap { save }
     end
 
+    def prune_allowlist
+      test_run = Parser::Rspec.parse(timings_path)
+      removed = allowlist.prune(test_run, self)
+      save if removed.any?
+      removed
+    end
+
     def limits_set?
       suite.max_duration || per_test_case.default || per_test_case.types.any?
     end
