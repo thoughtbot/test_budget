@@ -9,9 +9,8 @@ module TestBudget
       TOLERANCE = 0.10
       PER_TEST_CASE_DEFAULTS = {"default" => 3, "system" => 6, "request" => 3, "model" => 1.5}.freeze
 
-      def initialize(output:, timings_path: nil, force: false)
+      def initialize(timings_path: nil, force: false)
         @timings_path = timings_path
-        @output = output
         @force = force
       end
 
@@ -24,7 +23,7 @@ module TestBudget
           generate_defaults
         end
 
-        @output.puts "Created #{DEFAULT_BUDGET_PATH}"
+        puts "Created #{DEFAULT_BUDGET_PATH}"
       end
 
       private

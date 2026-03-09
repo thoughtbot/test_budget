@@ -1,9 +1,7 @@
 # frozen_string_literal: true
 
 RSpec.describe TestBudget::CLI do
-  let(:output) { StringIO.new }
-  let(:error) { StringIO.new }
-  let(:cli) { described_class.new(output: output, error: error) }
+  let(:cli) { described_class.new }
 
   it "returns 0 when all tests are within budget" do
     write_timings_file([
@@ -17,10 +15,11 @@ RSpec.describe TestBudget::CLI do
         "timings_path" => timings_path,
         "per_test_case" => {"default" => 5}
       ) do |budget_path|
-        exit_code = cli.call(["audit", "--budget", budget_path])
+        exit_code = nil
+        expect { exit_code = cli.call(["audit", "--budget", budget_path]) }
+          .to output(/all clear/).to_stdout
 
         expect(exit_code).to eq(0)
-        expect(output.string).to include("all clear")
       end
     end
   end
@@ -37,75 +36,81 @@ RSpec.describe TestBudget::CLI do
         "timings_path" => timings_path,
         "per_test_case" => {"default" => 5}
       ) do |budget_path|
-        exit_code = cli.call(["audit", "--budget", budget_path])
+        exit_code = nil
+        expect { exit_code = cli.call(["audit", "--budget", budget_path]) }
+          .to output(/violation/).to_stdout
 
         expect(exit_code).to eq(1)
-        expect(output.string).to include("violation")
       end
     end
   end
 
   describe "help" do
     it "prints help and returns 0 for 'help' command" do
-      exit_code = cli.call(["help"])
+      exit_code = nil
+      expect { exit_code = cli.call(["help"]) }
+        .to output(/Usage: test_budget <command>.*audit.*allowlist.*init/m).to_stdout
 
       expect(exit_code).to eq(0)
-      expect(output.string).to include("Usage: test_budget <command>")
-      expect(output.string).to include("audit")
-      expect(output.string).to include("allowlist")
-      expect(output.string).to include("init")
     end
 
     it "prints help and returns 0 for --help flag" do
-      exit_code = cli.call(["--help"])
+      exit_code = nil
+      expect { exit_code = cli.call(["--help"]) }
+        .to output(/Usage: test_budget <command>/).to_stdout
 
       expect(exit_code).to eq(0)
-      expect(output.string).to include("Usage: test_budget <command>")
     end
 
     it "prints help and returns 0 for -h flag" do
-      exit_code = cli.call(["-h"])
+      exit_code = nil
+      expect { exit_code = cli.call(["-h"]) }
+        .to output(/Usage: test_budget <command>/).to_stdout
 
       expect(exit_code).to eq(0)
-      expect(output.string).to include("Usage: test_budget <command>")
     end
 
     it "prints help and returns 0 with no arguments" do
-      exit_code = cli.call([])
+      exit_code = nil
+      expect { exit_code = cli.call([]) }
+        .to output(/Usage: test_budget <command>/).to_stdout
 
       expect(exit_code).to eq(0)
-      expect(output.string).to include("Usage: test_budget <command>")
     end
   end
 
   describe "version" do
     it "prints version and returns 0 for --version" do
-      exit_code = cli.call(["--version"])
+      exit_code = nil
+      expect { exit_code = cli.call(["--version"]) }
+        .to output(include(TestBudget::VERSION)).to_stdout
 
       expect(exit_code).to eq(0)
-      expect(output.string).to include(TestBudget::VERSION)
     end
 
     it "prints version and returns 0 for -v" do
-      exit_code = cli.call(["-v"])
+      exit_code = nil
+      expect { exit_code = cli.call(["-v"]) }
+        .to output(include(TestBudget::VERSION)).to_stdout
 
       expect(exit_code).to eq(0)
-      expect(output.string).to include(TestBudget::VERSION)
     end
   end
 
   it "returns 1 for unknown command" do
-    exit_code = cli.call(["unknown"])
+    exit_code = nil
+    expect { exit_code = cli.call(["unknown"]) }
+      .to output(/invalid argument/).to_stderr
 
     expect(exit_code).to eq(1)
-    expect(error.string).to include("invalid argument")
   end
 
   it "reports errors to stderr and returns 1" do
-    exit_code = cli.call(["audit", "--budget", "nonexistent.yml"])
+    exit_code = nil
+    expect { exit_code = cli.call(["audit", "--budget", "nonexistent.yml"]) }
+      .to output(/not found/).to_stderr
 
     expect(exit_code).to eq(1)
-    expect(error.string).to include("not found")
   end
 
   describe "allowlist subcommand" do
@@ -122,13 +127,14 @@ RSpec.describe TestBudget::CLI do
           "timings_path" => timings_path,
           "per_test_case" => {"default" => 5}
         ) do |budget_path|
-          exit_code = cli.call(["allowlist", "spec/models/user_spec.rb:4", "--reason", "Legacy test", "--budget", budget_path])
+          exit_code = nil
+          expect { exit_code = cli.call(["allowlist", "spec/models/user_spec.rb:4", "--reason", "Legacy test", "--budget", budget_path]) }
+            .to output(/Allowlisted/).to_stdout
 
           expect(exit_code).to eq(0)
           config = YAML.safe_load_file(budget_path)
           expect(config["allowlist"].first["test_case"]).to eq("spec/models/user_spec.rb -- User is valid")
           expect(config["allowlist"].first["reason"]).to eq("Legacy test")
-          expect(output.string).to include("Allowlisted")
         end
       end
     end
@@ -146,19 +152,21 @@ RSpec.describe TestBudget::CLI do
           "timings_path" => timings_path,
           "per_test_case" => {"default" => 5}
         ) do |budget_path|
-          exit_code = cli.call(["allowlist", "spec/models/user_spec.rb:4", "--budget", budget_path])
+          exit_code = nil
+          expect { exit_code = cli.call(["allowlist", "spec/models/user_spec.rb:4", "--budget", budget_path]) }
+            .to output(/--reason is required/).to_stderr
 
           expect(exit_code).to eq(1)
-          expect(error.string).to include("--reason is required")
         end
       end
     end
 
     it "handles missing option arguments" do
-      exit_code = cli.call(["allowlist", "spec/models/user_spec.rb:4", "--reason"])
+      exit_code = nil
+      expect { exit_code = cli.call(["allowlist", "spec/models/user_spec.rb:4", "--reason"]) }
+        .to output(/missing argument/).to_stderr
 
       expect(exit_code).to eq(1)
-      expect(error.string).to include("missing argument")
     end
 
     it "returns 1 when no matching test case" do
@@ -174,10 +182,11 @@ RSpec.describe TestBudget::CLI do
           "timings_path" => timings_path,
           "per_test_case" => {"default" => 5}
         ) do |budget_path|
-          exit_code = cli.call(["allowlist", "spec/models/post_spec.rb:4", "--reason", "test", "--budget", budget_path])
+          exit_code = nil
+          expect { exit_code = cli.call(["allowlist", "spec/models/post_spec.rb:4", "--reason", "test", "--budget", budget_path]) }
+            .to output(/No test case found/).to_stderr
 
           expect(exit_code).to eq(1)
-          expect(error.string).to include("No test case found")
         end
       end
     end
@@ -194,7 +203,9 @@ RSpec.describe TestBudget::CLI do
       write_timings_file([
         {"file_path" => "spec/models/user_spec.rb", "full_description" => "User is valid", "run_time" => 1.0, "status" => "passed", "line_number" => 4}
       ]) do |timings_path|
-        exit_code = cli.call(["init", timings_path])
+        exit_code = nil
+        expect { exit_code = cli.call(["init", timings_path]) }
+          .to output(/Created/).to_stdout
 
         expect(exit_code).to eq(0)
         config = YAML.safe_load_file(".test_budget.yml")
@@ -204,7 +215,9 @@ RSpec.describe TestBudget::CLI do
     end
 
     it "uses no-input mode when default path doesn't exist" do
-      exit_code = cli.call(["init"])
+      exit_code = nil
+      expect { exit_code = cli.call(["init"]) }
+        .to output(/Created/).to_stdout
 
       expect(exit_code).to eq(0)
       config = YAML.safe_load_file(".test_budget.yml")
@@ -215,7 +228,9 @@ RSpec.describe TestBudget::CLI do
     it "passes --force flag" do
       File.write(".test_budget.yml", "existing: config")
 
-      exit_code = cli.call(["init", "--force"])
+      exit_code = nil
+      expect { exit_code = cli.call(["init", "--force"]) }
+        .to output(/Created/).to_stdout
 
       expect(exit_code).to eq(0)
       config = YAML.safe_load_file(".test_budget.yml")
@@ -223,19 +238,21 @@ RSpec.describe TestBudget::CLI do
     end
 
     it "returns 1 when explicit results file doesn't exist" do
-      exit_code = cli.call(["init", "nonexistent.json"])
+      exit_code = nil
+      expect { exit_code = cli.call(["init", "nonexistent.json"]) }
+        .to output(/No timing files found/).to_stderr
 
       expect(exit_code).to eq(1)
-      expect(error.string).to include("No timing files found")
     end
 
     it "returns 1 when config exists without --force" do
       File.write(".test_budget.yml", "existing: config")
 
-      exit_code = cli.call(["init"])
+      exit_code = nil
+      expect { exit_code = cli.call(["init"]) }
+        .to output(/--force/).to_stderr
 
       expect(exit_code).to eq(1)
-      expect(error.string).to include("--force")
     end
   end
 end

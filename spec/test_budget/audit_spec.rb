@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 RSpec.describe TestBudget::Audit do
-  let(:output) { StringIO.new }
-
   it "returns no violations when all tests are within budget" do
     write_timings_file([
       {
@@ -15,11 +13,12 @@ RSpec.describe TestBudget::Audit do
         "timings_path" => timings_path,
         "per_test_case" => {"default" => 5}
       ) do |budget_path|
-        audit = described_class.new(budget_path: budget_path, output: output)
-        result = audit.perform
+        audit = described_class.new(budget_path: budget_path)
+
+        result = nil
+        expect { result = audit.perform }.to output(/all clear/).to_stdout
 
         expect(result).to be_passed
-        expect(output.string).to include("all clear")
       end
     end
   end
@@ -36,11 +35,12 @@ RSpec.describe TestBudget::Audit do
         "timings_path" => timings_path,
         "per_test_case" => {"default" => 5}
       ) do |budget_path|
-        audit = described_class.new(budget_path: budget_path, output: output)
-        result = audit.perform
+        audit = described_class.new(budget_path: budget_path)
+
+        result = nil
+        expect { result = audit.perform }.to output(/violation/).to_stdout
 
         expect(result).not_to be_passed
-        expect(output.string).to include("violation")
       end
     end
   end

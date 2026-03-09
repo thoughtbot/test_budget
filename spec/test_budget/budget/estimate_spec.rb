@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 RSpec.describe TestBudget::Budget::Estimate do
-  let(:output) { StringIO.new }
-
   around do |example|
     Dir.mktmpdir do |dir|
       Dir.chdir(dir) { example.run }
@@ -18,7 +16,8 @@ RSpec.describe TestBudget::Budget::Estimate do
           {"file_path" => "spec/system/login_spec.rb", "full_description" => "Login works", "run_time" => 4.0, "status" => "passed", "line_number" => 3},
           {"file_path" => "spec/requests/api_spec.rb", "full_description" => "API responds", "run_time" => 1.5, "status" => "passed", "line_number" => 2}
         ]) do |timings_path|
-          described_class.new(timings_path: timings_path, output: output).generate
+          expect { described_class.new(timings_path: timings_path).generate }
+            .to output(/Created/).to_stdout
 
           config = YAML.safe_load_file(".test_budget.yml")
           expect(config["timings_path"]).to eq(timings_path)
@@ -33,7 +32,8 @@ RSpec.describe TestBudget::Budget::Estimate do
           {"file_path" => "spec/models/user_spec.rb", "full_description" => "User is valid", "run_time" => 5.0, "status" => "passed", "line_number" => 4},
           {"file_path" => "spec/models/post_spec.rb", "full_description" => "Post is valid", "run_time" => 5.0, "status" => "passed", "line_number" => 5}
         ]) do |timings_path|
-          described_class.new(timings_path: timings_path, output: output).generate
+          expect { described_class.new(timings_path: timings_path).generate }
+            .to output.to_stdout
 
           config = YAML.safe_load_file(".test_budget.yml")
           expect(config["suite"]["max_duration"]).to eq(11) # ceil(10.0 * 1.1) = 11
@@ -48,7 +48,8 @@ RSpec.describe TestBudget::Budget::Estimate do
         end
 
         write_timings_file(examples) do |timings_path|
-          described_class.new(timings_path: timings_path, output: output).generate
+          expect { described_class.new(timings_path: timings_path).generate }
+            .to output.to_stdout
 
           config = YAML.safe_load_file(".test_budget.yml")
           # p99 of 1.0..3.0 (21 items): index 19.8, value 2.98
@@ -61,7 +62,8 @@ RSpec.describe TestBudget::Budget::Estimate do
         write_timings_file([
           {"file_path" => "spec/models/user_spec.rb", "full_description" => "User is valid", "run_time" => 1.0, "status" => "passed", "line_number" => 4}
         ]) do |timings_path|
-          described_class.new(timings_path: timings_path, output: output).generate
+          expect { described_class.new(timings_path: timings_path).generate }
+            .to output.to_stdout
 
           config = YAML.safe_load_file(".test_budget.yml")
           expect(config["per_test_case"]["system"]).to eq(6)
@@ -73,16 +75,16 @@ RSpec.describe TestBudget::Budget::Estimate do
         write_timings_file([
           {"file_path" => "spec/models/user_spec.rb", "full_description" => "User is valid", "run_time" => 1.0, "status" => "passed", "line_number" => 4}
         ]) do |timings_path|
-          described_class.new(timings_path: timings_path, output: output).generate
-
-          expect(output.string).to include("Created .test_budget.yml")
+          expect { described_class.new(timings_path: timings_path).generate }
+            .to output(/Created .test_budget.yml/).to_stdout
         end
       end
     end
 
     context "without a results file" do
       it "generates config with defaults only and no suite section" do
-        described_class.new(timings_path: nil, output: output).generate
+        expect { described_class.new(timings_path: nil).generate }
+          .to output.to_stdout
 
         config = YAML.safe_load_file(".test_budget.yml")
         expect(config["timings_path"]).to eq("tmp/test_timings.json")
@@ -95,9 +97,8 @@ RSpec.describe TestBudget::Budget::Estimate do
       end
 
       it "prints created message" do
-        described_class.new(timings_path: nil, output: output).generate
-
-        expect(output.string).to include("Created .test_budget.yml")
+        expect { described_class.new(timings_path: nil).generate }
+          .to output(/Created .test_budget.yml/).to_stdout
       end
     end
 
@@ -106,14 +107,15 @@ RSpec.describe TestBudget::Budget::Estimate do
         File.write(".test_budget.yml", "existing: config")
 
         expect {
-          described_class.new(timings_path: nil, output: output).generate
+          described_class.new(timings_path: nil).generate
         }.to raise_error(TestBudget::Error, /--force/)
       end
 
       it "overwrites with force: true" do
         File.write(".test_budget.yml", "existing: config")
 
-        described_class.new(timings_path: nil, output: output, force: true).generate
+        expect { described_class.new(timings_path: nil, force: true).generate }
+          .to output.to_stdout
 
         config = YAML.safe_load_file(".test_budget.yml")
         expect(config["per_test_case"]["default"]).to eq(3)
@@ -122,7 +124,7 @@ RSpec.describe TestBudget::Budget::Estimate do
 
     it "raises error when explicit results path doesn't exist" do
       expect {
-        described_class.new(timings_path: "nonexistent.json", output: output).generate
+        described_class.new(timings_path: "nonexistent.json").generate
       }.to raise_error(TestBudget::Error, /No timing files found/)
     end
 
@@ -132,7 +134,7 @@ RSpec.describe TestBudget::Budget::Estimate do
         f.flush
 
         expect {
-          described_class.new(timings_path: f.path, output: output).generate
+          described_class.new(timings_path: f.path).generate
         }.to raise_error(TestBudget::Error, /Invalid JSON/)
       end
     end

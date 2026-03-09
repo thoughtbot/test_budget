@@ -5,11 +5,6 @@ require "argument_parser"
 
 module TestBudget
   class CLI
-    def initialize(output: $stdout, error: $stderr)
-      @output = output
-      @error = error
-    end
-
     def call(argv)
       args = argv.dup
 
@@ -25,7 +20,7 @@ module TestBudget
       in "help" then print_help
       end
     rescue ArgumentParser::ParseError, TestBudget::Error, OptionParser::MissingArgument => e
-      @error.puts e.message
+      warn e.message
       1
     end
 
@@ -38,12 +33,12 @@ module TestBudget
     end
 
     def print_help
-      @output.puts help_text
+      puts help_text
       0
     end
 
     def print_version
-      @output.puts "test_budget #{TestBudget::VERSION}"
+      puts "test_budget #{TestBudget::VERSION}"
       0
     end
 
@@ -71,7 +66,7 @@ module TestBudget
         opts.on("--budget PATH", "Path to budget file") { |path| budget_path = path }
       end.parse!(args)
 
-      result = Audit.new(budget_path: budget_path, output: @output).perform
+      result = Audit.new(budget_path: budget_path).perform
 
       result.passed? ? 0 : 1
     end
@@ -91,7 +86,7 @@ module TestBudget
       raise Error, "locator (e.g., spec/file_spec.rb:10) is required" unless locator
 
       entry = Budget.load(budget_path).add_to_allowlist(locator, reason: reason)
-      @output.puts "Allowlisted: #{entry.test_case_key}"
+      puts "Allowlisted: #{entry.test_case_key}"
 
       0
     end
@@ -105,7 +100,7 @@ module TestBudget
       end.parse!(args)
       timings_path = args.shift
 
-      Budget.estimate(timings_path: timings_path, output: @output, force: force)
+      Budget.estimate(timings_path: timings_path, force: force)
 
       0
     end
