@@ -25,32 +25,36 @@ gem "test_budget"
 
 ## Quick start
 
-Generate a starter config from an existing RSpec JSON results file:
+Three steps: generate timing data, create a budget config, then audit.
+
+**1. Run your tests with JSON output** to collect timing data:
+
+```bash
+bundle exec rspec --format progress --format json --out tmp/test_timings.json
+```
+
+> [!NOTE]
+> Using a parallel runner? See [this section](#parallel-test-runners)
+> for setup instructions.
+
+**2. Generate a budget config** from the timing data:
 
 ```bash
 bundle exec test_budget init tmp/test_timings.json
 ```
 
-When given a results file, `init` derives budgets from your actual data (99th
-percentile + 10% tolerance, rounded to the nearest 0.5s). If you don't have a
-results file yet, run without arguments to generate a config with Rails
-defaults:
+This creates `.test_budget.yml` with budgets derived from your actual data
+(see [Configuration](#configuration) for details). Edit it freely to match your
+standards.
+
+> [!TIP]
+> Don't want to generate timing data first? Run `bundle exec test_budget init`
+> without arguments to create a config with Rails defaults instead.
+
+**3. Audit your test suite** against the budget:
 
 ```bash
-bundle exec test_budget init
-```
-
-Use `--force` to overwrite an existing `.test_budget.yml`.
-
-`estimate` is an alias for `init`. Use whichever name feels right:
-
-```bash
-bundle exec test_budget estimate tmp/test_timings.json
-```
-
-Then run the audit after your tests:
-
-```bash
+bundle exec rspec --format progress --format json --out tmp/test_timings.json
 bundle exec test_budget audit
 ```
 
@@ -64,22 +68,17 @@ Test budget: 1 violation(s) found
      bundle exec test_budget allowlist spec/system/signup_spec.rb:15 --reason "<reason>"
 ```
 
-## RSpec JSON results file
+That's it. From here on, run the audit after every test run (see [CI
+integration](#ci-integration)).
 
-> [!TIP]
-> You can skip this step and run `test_budget init` without a results
-> file to get started with Rails defaults right away.
+### Init options
 
-Add to your RSpec configuration or CI command:
+Use `--force` to overwrite an existing `.test_budget.yml`.
 
-```bash
-bundle exec rspec --format json --out tmp/test_timings.json
-```
-
-Or combine with your usual formatter:
+`estimate` is an alias for `init`. Use whichever name feels right:
 
 ```bash
-bundle exec rspec --format progress --format json --out tmp/test_timings.json
+bundle exec test_budget estimate tmp/test_timings.json
 ```
 
 ### Parallel test runners
@@ -109,8 +108,11 @@ flatware rspec --format json --out tmp/test_timings.json
 
 ## Configuration
 
-The `init` command creates a `.test_budget.yml` in your project root. You can
-also create one manually:
+The `init` command creates a `.test_budget.yml` in your project root with
+budgets based on your actual data (per-test limits use the 99th percentile
+rounded to the nearest 0.5s; the suite limit uses total duration + 10%
+headroom). The generated file is a starting point — edit it freely to
+match your team's standards. You can also create one manually:
 
 ```yaml
 timings_path: tmp/test_timings.json
