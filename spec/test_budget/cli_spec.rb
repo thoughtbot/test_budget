@@ -248,6 +248,32 @@ RSpec.describe TestBudget::CLI do
       end
     end
 
+    it "pluralizes when multiple entries removed" do
+      write_timings_file([
+        {
+          "file_path" => "spec/models/user_spec.rb",
+          "full_description" => "User is valid",
+          "run_time" => 1.0, "status" => "passed",
+          "line_number" => 4
+        }
+      ]) do |timings_path|
+        write_budget_file(
+          "timings_path" => timings_path,
+          "per_test_case" => {"default" => 5},
+          "allowlist" => [
+            {"test_case" => "spec/models/old_spec.rb -- gone test", "reason" => "Stale", "expires_on" => (Date.today + 365).to_s},
+            {"test_case" => "spec/models/another_spec.rb -- also gone", "reason" => "Stale", "expires_on" => (Date.today + 365).to_s}
+          ]
+        ) do |budget_path|
+          exit_code = nil
+          expect { exit_code = cli.call(["prune", "--budget", budget_path]) }
+            .to output(/2 obsolete allowlist entries removed/).to_stdout
+
+          expect(exit_code).to eq(0)
+        end
+      end
+    end
+
     it "prints 'no obsolete' and returns 0 when nothing to prune" do
       write_timings_file([
         {
