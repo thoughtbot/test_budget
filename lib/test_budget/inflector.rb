@@ -10,7 +10,7 @@ module TestBudget
     }.freeze
 
     def self.pluralize(word, count)
-      count == 1 ? word : (IRREGULARS[word] || "#{word}s")
+      (count == 1) ? word : (IRREGULARS[word] || "#{word}s")
     end
 
     def self.singularize(word)
