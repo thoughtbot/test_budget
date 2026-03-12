@@ -11,6 +11,9 @@ module TestBudget
     def size = test_cases.size
     def total_time = test_cases.sum(&:duration)
 
+    alias_method :count, :size
+    alias_method :duration, :total_time
+
     def over?(budget)
       max = budget.suite.max_duration
       return if max.nil?

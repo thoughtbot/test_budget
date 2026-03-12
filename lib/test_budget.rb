@@ -15,7 +15,10 @@ require_relative "test_budget/audit"
 require_relative "test_budget/statistics"
 require_relative "test_budget/budget/estimate"
 require_relative "test_budget/table"
+require_relative "test_budget/format"
 require_relative "test_budget/test_run/breakdown"
+require_relative "test_budget/test_run/delta"
+require_relative "test_budget/test_run/diff"
 require_relative "test_budget/cli"
 
 module TestBudget

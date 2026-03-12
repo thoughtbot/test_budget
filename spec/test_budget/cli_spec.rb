@@ -373,6 +373,58 @@ RSpec.describe TestBudget::CLI do
     end
   end
 
+  describe "diff subcommand" do
+    it "shows diff between two different timing files" do
+      write_timings_file([
+        {"file_path" => "spec/models/user_spec.rb", "full_description" => "User is valid", "run_time" => 10.0, "status" => "passed"},
+        {"file_path" => "spec/system/login_spec.rb", "full_description" => "Login works", "run_time" => 50.0, "status" => "passed"}
+      ]) do |before_path|
+        write_timings_file([
+          {"file_path" => "spec/models/user_spec.rb", "full_description" => "User is valid", "run_time" => 5.0, "status" => "passed"},
+          {"file_path" => "spec/system/login_spec.rb", "full_description" => "Login works", "run_time" => 30.0, "status" => "passed"}
+        ]) do |after_path|
+          exit_code = nil
+          expect { exit_code = cli.call(["diff", before_path, after_path]) }
+            .to output(/system.*-20s.*model.*-5s/m).to_stdout
+
+          expect(exit_code).to eq(0)
+        end
+      end
+    end
+
+    it "produces no output when files are identical" do
+      write_timings_file([
+        {"file_path" => "spec/models/user_spec.rb", "full_description" => "User is valid", "run_time" => 10.0, "status" => "passed"}
+      ]) do |path|
+        exit_code = nil
+        expect { exit_code = cli.call(["diff", path, path]) }
+          .to output("").to_stdout
+
+        expect(exit_code).to eq(0)
+      end
+    end
+
+    it "errors when missing before file argument" do
+      exit_code = nil
+      expect { exit_code = cli.call(["diff"]) }
+        .to output(/missing required argument/).to_stderr
+
+      expect(exit_code).to eq(1)
+    end
+
+    it "errors when missing after file argument" do
+      write_timings_file([
+        {"file_path" => "spec/models/user_spec.rb", "full_description" => "User is valid", "run_time" => 10.0, "status" => "passed"}
+      ]) do |path|
+        exit_code = nil
+        expect { exit_code = cli.call(["diff", path]) }
+          .to output(/missing required argument/).to_stderr
+
+        expect(exit_code).to eq(1)
+      end
+    end
+  end
+
   describe "breakdown subcommand" do
     it "shows time distribution across test types" do
       write_timings_file([

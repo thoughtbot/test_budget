@@ -19,6 +19,7 @@ module TestBudget
       in "prune" then run_prune(args)
       in "init" | "estimate" then run_init(args)
       in "breakdown" then run_breakdown(args)
+      in "diff" then run_diff(args)
       in "help" then print_help
       end
     rescue ArgumentParser::ParseError, TestBudget::Error, OptionParser::MissingArgument, OptionParser::InvalidArgument => e
@@ -30,7 +31,7 @@ module TestBudget
 
     def command_parser
       ArgumentParser.build do
-        required :command, pattern: ["audit", "allowlist", "prune", "init", "estimate", "breakdown", "help"]
+        required :command, pattern: ["audit", "allowlist", "prune", "init", "estimate", "breakdown", "diff", "help"]
       end
     end
 
@@ -55,6 +56,7 @@ module TestBudget
           init        Generate starter .test_budget.yml config
           estimate    Alias for init
           breakdown   Show time distribution across test types
+          diff        Compare two test runs
           help        Show this help message
 
         Options:
@@ -128,6 +130,19 @@ module TestBudget
       timings_path = args.shift || DEFAULT_TIMINGS_PATH
       test_run = Parser::Rspec.parse(timings_path)
       puts TestRun::Breakdown.new(test_run: test_run, sort: sort)
+      0
+    end
+
+    def run_diff(args)
+      parsed_args = ArgumentParser.build {
+        required :before
+        required :after
+      }.parse!(args)
+
+      before = Parser::Rspec.parse(parsed_args[:before])
+      after = Parser::Rspec.parse(parsed_args[:after])
+
+      print TestRun::Diff.new(before, after)
       0
     end
 
