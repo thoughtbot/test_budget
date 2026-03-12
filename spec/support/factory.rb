@@ -21,7 +21,7 @@ module Factory
   end
 
   def build_test_run(test_cases)
-    TestBudget::TestRun.new(test_cases: test_cases, suite_duration: test_cases.sum(&:duration))
+    TestBudget::TestRun.new(test_cases: test_cases, wall_time: test_cases.sum(&:duration))
   end
 
   def build_result(violations: [], warnings: [])

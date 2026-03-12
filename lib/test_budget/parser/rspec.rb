@@ -14,7 +14,7 @@ module TestBudget
         groups = paths.flat_map { |path| parse_file(path) }
         TestRun.new(
           test_cases: groups.flatten,
-          suite_duration: groups.map { |g| g.sum(&:duration) }.max || 0
+          wall_time: groups.map { |g| g.sum(&:duration) }.max || 0
         )
       end
 

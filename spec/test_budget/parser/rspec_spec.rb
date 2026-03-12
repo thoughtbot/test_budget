@@ -62,7 +62,7 @@ RSpec.describe TestBudget::Parser::Rspec do
 
       expect(result.test_cases.size).to eq(2)
       expect(result.test_cases.map(&:file)).to contain_exactly("spec/models/user_spec.rb", "spec/models/post_spec.rb")
-      expect(result.suite_duration).to eq(0.2)
+      expect(result.wall_time).to eq(0.2)
     end
   end
 
@@ -87,7 +87,7 @@ RSpec.describe TestBudget::Parser::Rspec do
 
     expect(result.test_cases.size).to eq(2)
     expect(result.test_cases.map(&:file)).to contain_exactly("spec/models/user_spec.rb", "spec/models/post_spec.rb")
-    expect(result.suite_duration).to eq(0.2)
+    expect(result.wall_time).to eq(0.2)
   end
 
   it "handles empty examples array" do

@@ -26,7 +26,7 @@ module TestBudget
 
       TABLE.render(
         rows,
-        footer: ["Total", test_run.size.to_s, "", format_duration(test_run.total_duration), ""]
+        footer: ["Total", test_run.size.to_s, "", format_duration(test_run.total_time), ""]
       )
     end
 

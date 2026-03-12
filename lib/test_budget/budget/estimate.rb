@@ -35,7 +35,7 @@ module TestBudget
 
       def generate_from_results
         test_run = Parser::Rspec.parse(@timings_path)
-        suite_budget = (test_run.suite_duration * (1 + TOLERANCE)).ceil
+        suite_budget = (test_run.wall_time * (1 + TOLERANCE)).ceil
         per_test_case_limits = derive_per_test_case(test_run.test_cases)
 
         budget = build_budget(

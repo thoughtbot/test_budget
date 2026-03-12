@@ -4,14 +4,14 @@ RSpec.describe TestBudget::TestRun do
   describe "#over?" do
     it "returns nil when under budget" do
       budget = build_budget(suite: {max_duration: 600})
-      test_run = described_class.new(test_cases: [], suite_duration: 500)
+      test_run = described_class.new(test_cases: [], wall_time: 500)
 
       expect(test_run.over?(budget)).to be_nil
     end
 
     it "returns violation when over budget" do
       budget = build_budget(suite: {max_duration: 600})
-      test_run = described_class.new(test_cases: [], suite_duration: 700)
+      test_run = described_class.new(test_cases: [], wall_time: 700)
 
       result = test_run.over?(budget)
 
@@ -23,14 +23,14 @@ RSpec.describe TestBudget::TestRun do
 
     it "returns nil when max_duration is nil" do
       budget = build_budget
-      test_run = described_class.new(test_cases: [], suite_duration: 9999)
+      test_run = described_class.new(test_cases: [], wall_time: 9999)
 
       expect(test_run.over?(budget)).to be_nil
     end
 
     it "returns nil when duration is zero" do
       budget = build_budget(suite: {max_duration: 600})
-      test_run = described_class.new(test_cases: [], suite_duration: 0)
+      test_run = described_class.new(test_cases: [], wall_time: 0)
 
       expect(test_run.over?(budget)).to be_nil
     end
@@ -43,24 +43,24 @@ RSpec.describe TestBudget::TestRun do
           build_test_case(file: "spec/models/user_spec.rb", duration: 1.0),
           build_test_case(file: "spec/models/post_spec.rb", duration: 2.0)
         ],
-        suite_duration: 3.0
+        wall_time: 3.0
       )
 
       expect(test_run.size).to eq(2)
     end
   end
 
-  describe "#total_duration" do
+  describe "#total_time" do
     it "returns the sum of all test case durations" do
       test_run = described_class.new(
         test_cases: [
           build_test_case(file: "spec/models/user_spec.rb", duration: 1.5),
           build_test_case(file: "spec/models/post_spec.rb", duration: 2.5)
         ],
-        suite_duration: 4.0
+        wall_time: 4.0
       )
 
-      expect(test_run.total_duration).to eq(4.0)
+      expect(test_run.total_time).to eq(4.0)
     end
   end
 
@@ -72,7 +72,7 @@ RSpec.describe TestBudget::TestRun do
           build_test_case(file: "spec/models/post_spec.rb", duration: 3.0),
           build_test_case(file: "spec/system/login_spec.rb", duration: 50.0)
         ],
-        suite_duration: 55.0
+        wall_time: 55.0
       )
 
       groups = test_run.groups
@@ -91,7 +91,7 @@ RSpec.describe TestBudget::TestRun do
     end
 
     it "returns empty array when no test cases" do
-      test_run = described_class.new(test_cases: [], suite_duration: 0)
+      test_run = described_class.new(test_cases: [], wall_time: 0)
 
       expect(test_run.groups).to eq([])
     end
@@ -104,7 +104,7 @@ RSpec.describe TestBudget::TestRun do
           build_test_case(file: "spec/models/user_spec.rb", duration: 25.0),
           build_test_case(file: "spec/models/post_spec.rb", duration: 75.0)
         ],
-        suite_duration: 100.0
+        wall_time: 100.0
       )
 
       group = described_class.new(type: :model, count: 1, duration: 25.0, test_run: test_run)

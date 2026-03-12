@@ -10,7 +10,7 @@ RSpec.describe TestBudget::Breakdown do
           build_test_case(file: "spec/system/login_spec.rb", duration: 50.0),
           build_test_case(file: "spec/requests/api_spec.rb", duration: 10.0)
         ],
-        suite_duration: 65.0
+        wall_time: 65.0
       )
 
       output = described_class.new(test_run).to_s
@@ -30,7 +30,7 @@ RSpec.describe TestBudget::Breakdown do
           build_test_case(file: "spec/models/user_spec.rb", duration: 25.0),
           build_test_case(file: "spec/system/login_spec.rb", duration: 75.0)
         ],
-        suite_duration: 100.0
+        wall_time: 100.0
       )
 
       output = described_class.new(test_run).to_s
@@ -44,7 +44,7 @@ RSpec.describe TestBudget::Breakdown do
         test_cases: [
           build_test_case(file: "spec/models/user_spec.rb", duration: 256.5)
         ],
-        suite_duration: 256.5
+        wall_time: 256.5
       )
 
       output = described_class.new(test_run).to_s
@@ -58,7 +58,7 @@ RSpec.describe TestBudget::Breakdown do
           build_test_case(file: "spec/models/user_spec.rb", duration: 10.0),
           build_test_case(file: "spec/system/login_spec.rb", duration: 50.0)
         ],
-        suite_duration: 60.0
+        wall_time: 60.0
       )
 
       output = described_class.new(test_run).to_s
@@ -67,7 +67,7 @@ RSpec.describe TestBudget::Breakdown do
     end
 
     it "returns a message when there are no test cases" do
-      test_run = TestBudget::TestRun.new(test_cases: [], suite_duration: 0)
+      test_run = TestBudget::TestRun.new(test_cases: [], wall_time: 0)
 
       output = described_class.new(test_run).to_s
 
@@ -80,7 +80,7 @@ RSpec.describe TestBudget::Breakdown do
           build_test_case(file: "spec/policies/admin_policy_spec.rb", duration: 5.0),
           build_test_case(file: "spec/factories/user_factory_spec.rb", duration: 3.0)
         ],
-        suite_duration: 8.0
+        wall_time: 8.0
       )
 
       output = described_class.new(test_run).to_s
