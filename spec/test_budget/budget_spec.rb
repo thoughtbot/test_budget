@@ -128,6 +128,15 @@ RSpec.describe TestBudget::Budget do
       expect(inflated.per_test_case.default).to eq(2.2)
     end
 
+    it "handles nil per_test_case default" do
+      budget = build_budget(suite: {max_duration: 10}, per_test_case: {types: {system: 10}})
+
+      inflated = budget.inflate_by(0.1)
+
+      expect(inflated.per_test_case.default).to be_nil
+      expect(inflated.per_test_case.types).to eq({system: 11.0})
+    end
+
     it "preserves allowlist, path, and timings_path unchanged" do
       budget = build_budget(
         per_test_case: {default: 2},
