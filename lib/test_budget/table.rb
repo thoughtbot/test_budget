@@ -7,28 +7,49 @@ module TestBudget
     end
 
     def render(rows, footer:)
-      header = format_row(@columns.map(&:first))
-      separator = "-" * row_width
-      body = rows.map { |cells| format_row(cells) }
+      all_rows = [headers, *rows, footer]
+      widths = resolve_widths(all_rows)
 
-      [header, separator, *body, separator, format_row(footer)].join("\n") + "\n"
+      header = format_row(headers, widths)
+      body = rows.map { |cells| format_row(cells, widths) }
+
+      [
+        horizontal_line("┌", "┬", "┐", widths),
+        header,
+        horizontal_line("├", "┼", "┤", widths),
+        *body,
+        horizontal_line("├", "┼", "┤", widths),
+        format_row(footer, widths),
+        horizontal_line("└", "┴", "┘", widths)
+      ].join("\n") + "\n"
     end
 
     private
 
-    def format_row(cells)
-      parts = @columns.zip(cells).map { |(_, width, align), cell|
-        case align
+    def headers
+      @columns.map(&:first)
+    end
+
+    def resolve_widths(all_rows)
+      @columns.each_with_index.map { |_, i|
+        all_rows.map { |row| row[i].to_s.length }.max
+      }
+    end
+
+    def format_row(cells, widths)
+      parts = @columns.zip(cells, widths).map { |(_, alignment), cell, width|
+        case alignment
         when :right then cell.to_s.rjust(width)
         else cell.to_s.ljust(width)
         end
       }
 
-      parts.join(" ")
+      "│ #{parts.join(" │ ")} │"
     end
 
-    def row_width
-      @columns.sum { |_, width, _| width } + @columns.size - 1
+    def horizontal_line(left, mid, right, widths)
+      segments = widths.map { |w| "─" * (w + 2) }
+      left + segments.join(mid) + right
     end
   end
 end

@@ -3,11 +3,11 @@
 module TestBudget
   class Breakdown < Data.define(:test_run)
     TABLE = Table.new([
-      ["Test Type", 15, :left],
-      ["Count", 6, :right],
-      ["%", 8, :right],
-      ["Duration", 10, :right],
-      ["%", 8, :right]
+      ["Test Type", :left],
+      ["Count", :right],
+      ["%", :right],
+      ["Duration", :right],
+      ["%", :right]
     ])
 
     def to_s

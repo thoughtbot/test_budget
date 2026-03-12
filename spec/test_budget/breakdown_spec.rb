@@ -17,10 +17,10 @@ RSpec.describe TestBudget::Breakdown do
 
       lines = output.lines.map(&:rstrip)
 
-      expect(lines[0]).to match(/Test Type\s+Count\s+%\s+Duration\s+%/)
+      expect(lines[1]).to match(/Test Type\s+│\s+Count\s+│\s+%\s+│\s+Duration\s+│\s+%/)
 
-      type_lines = lines[2..4]
-      types_in_order = type_lines.map { |l| l.strip.split(/\s+/).first }
+      type_lines = lines[3..5]
+      types_in_order = type_lines.map { |l| l.split("│")[1].strip }
       expect(types_in_order).to eq(%w[system request model])
     end
 
@@ -35,8 +35,8 @@ RSpec.describe TestBudget::Breakdown do
 
       output = described_class.new(test_run).to_s
 
-      expect(output).to match(/system\s+1\s+50\.0%\s+1m 15s\s+75\.0%/)
-      expect(output).to match(/model\s+1\s+50\.0%\s+25s\s+25\.0%/)
+      expect(output).to match(/system\s+│\s+1\s+│\s+50\.0%\s+│\s+1m 15s\s+│\s+75\.0%/)
+      expect(output).to match(/model\s+│\s+1\s+│\s+50\.0%\s+│\s+25s\s+│\s+25\.0%/)
     end
 
     it "formats durations in human-readable format" do
@@ -63,7 +63,7 @@ RSpec.describe TestBudget::Breakdown do
 
       output = described_class.new(test_run).to_s
 
-      expect(output).to match(/Total\s+2\s+1m 0s/)
+      expect(output).to match(/Total\s+│\s+2\s+│\s+│\s+1m 0s/)
     end
 
     it "returns a message when there are no test cases" do
