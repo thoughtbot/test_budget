@@ -15,10 +15,10 @@ module TestBudget
       def initialize(test_run:, sort: :duration) = super
 
       def to_s
-        groups = sort_groups(test_run.groups)
+        groups = test_run.groups
         return "No test cases found.\n" if groups.empty?
 
-        rows = groups.map { |g|
+        rows = sort_groups(groups).map { |g|
           [
             g.type,
             g.count.to_s,
