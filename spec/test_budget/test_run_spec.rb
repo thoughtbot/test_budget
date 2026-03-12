@@ -65,7 +65,7 @@ RSpec.describe TestBudget::TestRun do
   end
 
   describe "#groups" do
-    it "groups test cases by type sorted by duration descending with percentages" do
+    it "groups test cases by type with percentages" do
       test_run = described_class.new(
         test_cases: [
           build_test_case(file: "spec/models/user_spec.rb", duration: 2.0),
@@ -77,17 +77,17 @@ RSpec.describe TestBudget::TestRun do
 
       groups = test_run.groups
 
-      expect(groups.map(&:type)).to eq([:system, :model])
+      expect(groups.map(&:type)).to contain_exactly(:system, :model)
 
-      system_group = groups[0]
-      expect(system_group).to have_attributes(count: 1, duration: 50.0)
-      expect(system_group.percent_count).to be_within(0.1).of(33.3)
-      expect(system_group.percent_duration).to be_within(0.1).of(90.9)
-
-      model_group = groups[1]
+      model_group = groups.find { |g| g.type == :model }
       expect(model_group).to have_attributes(count: 2, duration: 5.0)
       expect(model_group.percent_count).to be_within(0.1).of(66.7)
       expect(model_group.percent_duration).to be_within(0.1).of(9.1)
+
+      system_group = groups.find { |g| g.type == :system }
+      expect(system_group).to have_attributes(count: 1, duration: 50.0)
+      expect(system_group.percent_count).to be_within(0.1).of(33.3)
+      expect(system_group.percent_duration).to be_within(0.1).of(90.9)
     end
 
     it "returns empty array when no test cases" do

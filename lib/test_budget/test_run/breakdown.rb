@@ -12,7 +12,7 @@ module TestBudget
       ])
 
       def to_s
-        groups = test_run.groups
+        groups = test_run.groups.sort_by { |g| -g.duration }
         return "No test cases found.\n" if groups.empty?
 
         rows = groups.map { |g|

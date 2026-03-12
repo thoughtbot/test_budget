@@ -25,7 +25,6 @@ module TestBudget
         .map { |type, cases|
           Group.new(type: type, count: cases.size, duration: cases.sum(&:duration), test_run: self)
         }
-        .sort_by { |g| -g.duration }
     end
   end
 end
