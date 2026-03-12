@@ -17,7 +17,7 @@ RSpec.describe TestBudget::Breakdown do
 
       lines = output.lines.map(&:rstrip)
 
-      expect(lines[0]).to match(/Test Type\s+Count\s+% Count\s+Duration\s+% Time/)
+      expect(lines[0]).to match(/Test Type\s+Count\s+%\s+Duration\s+%/)
 
       type_lines = lines[2..4]
       types_in_order = type_lines.map { |l| l.strip.split(/\s+/).first }

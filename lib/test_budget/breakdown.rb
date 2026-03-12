@@ -5,9 +5,9 @@ module TestBudget
     TABLE = Table.new([
       ["Test Type", 15, :left],
       ["Count", 6, :right],
-      ["% Count", 8, :right],
+      ["%", 8, :right],
       ["Duration", 10, :right],
-      ["% Time", 8, :right]
+      ["%", 8, :right]
     ])
 
     def to_s

@@ -213,7 +213,7 @@ bundle exec test_budget breakdown tmp/test_timings.json
 Example output:
 
 ```
-Test Type         Count  % Count   Duration   % Time
+Test Type         Count        %   Duration        %
 ---------------------------------------------------
 system                4    8.0%     4m 16s    66.2%
 request              12   24.0%     1m 18s    20.2%
