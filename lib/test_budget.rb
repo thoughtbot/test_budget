@@ -13,10 +13,13 @@ require_relative "test_budget/parser/rspec"
 require_relative "test_budget/audit"
 require_relative "test_budget/statistics"
 require_relative "test_budget/budget/estimate"
+require_relative "test_budget/table"
+require_relative "test_budget/breakdown"
 require_relative "test_budget/cli"
 
 module TestBudget
   class Error < StandardError; end
 
   DEFAULT_BUDGET_PATH = ".test_budget.yml"
+  DEFAULT_TIMINGS_PATH = "tmp/test_timings.json"
 end

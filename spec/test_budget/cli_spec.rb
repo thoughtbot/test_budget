@@ -346,4 +346,29 @@ RSpec.describe TestBudget::CLI do
       expect(exit_code).to eq(1)
     end
   end
+
+  describe "breakdown subcommand" do
+    it "shows time distribution across test types" do
+      write_timings_file([
+        {"file_path" => "spec/models/user_spec.rb", "full_description" => "User is valid", "run_time" => 2.0, "status" => "passed"},
+        {"file_path" => "spec/models/post_spec.rb", "full_description" => "Post is valid", "run_time" => 3.0, "status" => "passed"},
+        {"file_path" => "spec/system/login_spec.rb", "full_description" => "Login works", "run_time" => 50.0, "status" => "passed"},
+        {"file_path" => "spec/requests/api_spec.rb", "full_description" => "API responds", "run_time" => 10.0, "status" => "passed"}
+      ]) do |timings_path|
+        exit_code = nil
+        expect { exit_code = cli.call(["breakdown", timings_path]) }
+          .to output(/system.*50s.*request.*10s.*model.*5s/m).to_stdout
+
+        expect(exit_code).to eq(0)
+      end
+    end
+
+    it "returns 1 when timings file does not exist" do
+      exit_code = nil
+      expect { exit_code = cli.call(["breakdown", "nonexistent.json"]) }
+        .to output(/No timing files found/).to_stderr
+
+      expect(exit_code).to eq(1)
+    end
+  end
 end

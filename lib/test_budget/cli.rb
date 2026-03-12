@@ -18,6 +18,7 @@ module TestBudget
       in "allowlist" then run_allowlist(args)
       in "prune" then run_prune(args)
       in "init" | "estimate" then run_init(args)
+      in "breakdown" then run_breakdown(args)
       in "help" then print_help
       end
     rescue ArgumentParser::ParseError, TestBudget::Error, OptionParser::MissingArgument => e
@@ -29,7 +30,7 @@ module TestBudget
 
     def command_parser
       ArgumentParser.build do
-        required :command, pattern: ["audit", "allowlist", "prune", "init", "estimate", "help"]
+        required :command, pattern: ["audit", "allowlist", "prune", "init", "estimate", "breakdown", "help"]
       end
     end
 
@@ -53,6 +54,7 @@ module TestBudget
           prune       Remove obsolete allowlist entries
           init        Generate starter .test_budget.yml config
           estimate    Alias for init
+          breakdown   Show time distribution across test types
           help        Show this help message
 
         Options:
@@ -112,6 +114,13 @@ module TestBudget
         puts "No obsolete allowlist entries found"
       end
 
+      0
+    end
+
+    def run_breakdown(args)
+      timings_path = args.shift || DEFAULT_TIMINGS_PATH
+      test_run = Parser::Rspec.parse(timings_path)
+      puts Breakdown.new(test_run)
       0
     end
 

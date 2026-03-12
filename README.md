@@ -202,6 +202,29 @@ Test budget: 2 violation(s) found
   2) Suite total (650.00s) exceeds limit (600.00s)
 ```
 
+## Breakdown
+
+See where your test time goes:
+
+```bash
+bundle exec test_budget breakdown tmp/test_timings.json
+```
+
+Example output:
+
+```
+Test Type         Count  % Count   Duration   % Time
+---------------------------------------------------
+system                4    8.0%     4m 16s    66.2%
+request              12   24.0%     1m 18s    20.2%
+model                30   60.0%        50s    12.9%
+job                   4    8.0%         3s     0.8%
+---------------------------------------------------
+Total                50              6m 27s
+```
+
+Without arguments, it reads from `tmp/test_timings.json`.
+
 ## CI integration
 
 Run the audit after your test suite:

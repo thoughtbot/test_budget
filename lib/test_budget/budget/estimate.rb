@@ -5,7 +5,6 @@ require "yaml"
 module TestBudget
   class Budget
     class Estimate
-      DEFAULT_TIMINGS_PATH = "tmp/test_timings.json"
       TOLERANCE = 0.10
       PER_TEST_CASE_DEFAULTS = {"default" => 3, "system" => 6, "request" => 3, "model" => 1.5}.freeze
 
