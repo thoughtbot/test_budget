@@ -2,7 +2,8 @@
 
 module TestBudget
   class TestRun
-    class Breakdown < Data.define(:test_run)
+    class Breakdown < Data.define(:test_run, :sort)
+      SORT_OPTIONS = %i[duration count type].freeze
       TABLE = Table.new([
         ["Test Type", :left],
         ["Count", :right],
@@ -11,8 +12,10 @@ module TestBudget
         ["%", :right]
       ])
 
+      def initialize(test_run:, sort: :duration) = super
+
       def to_s
-        groups = test_run.groups.sort_by { |g| -g.duration }
+        groups = sort_groups(test_run.groups)
         return "No test cases found.\n" if groups.empty?
 
         rows = groups.map { |g|
@@ -32,6 +35,14 @@ module TestBudget
       end
 
       private
+
+      def sort_groups(groups)
+        case sort
+        when :count then groups.sort_by { |g| [-g.count, -g.duration] }
+        when :type then groups.sort_by { |g| g.type.to_s }
+        else groups.sort_by { |g| -g.duration }
+        end
+      end
 
       def format_duration(seconds)
         if seconds >= 60

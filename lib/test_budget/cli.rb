@@ -21,7 +21,7 @@ module TestBudget
       in "breakdown" then run_breakdown(args)
       in "help" then print_help
       end
-    rescue ArgumentParser::ParseError, TestBudget::Error, OptionParser::MissingArgument => e
+    rescue ArgumentParser::ParseError, TestBudget::Error, OptionParser::MissingArgument, OptionParser::InvalidArgument => e
       warn e.message
       1
     end
@@ -118,9 +118,16 @@ module TestBudget
     end
 
     def run_breakdown(args)
+      sort = :duration
+
+      OptionParser.new do |opts|
+        opts.banner = "Usage: test_budget breakdown [timings_file] [options]"
+        opts.on("--sort FIELD", TestRun::Breakdown::SORT_OPTIONS, "Sort by: duration (default), count, type") { |s| sort = s }
+      end.parse!(args)
+
       timings_path = args.shift || DEFAULT_TIMINGS_PATH
       test_run = Parser::Rspec.parse(timings_path)
-      puts TestRun::Breakdown.new(test_run)
+      puts TestRun::Breakdown.new(test_run: test_run, sort: sort)
       0
     end
 

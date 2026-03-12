@@ -74,6 +74,43 @@ RSpec.describe TestBudget::TestRun::Breakdown do
       expect(output).to include("No test cases found")
     end
 
+    it "sorts alphabetically by type when sort is :type" do
+      test_run = TestBudget::TestRun.new(
+        test_cases: [
+          build_test_case(file: "spec/models/user_spec.rb", duration: 2.0),
+          build_test_case(file: "spec/system/login_spec.rb", duration: 50.0),
+          build_test_case(file: "spec/requests/api_spec.rb", duration: 10.0)
+        ],
+        wall_time: 62.0
+      )
+
+      output = described_class.new(test_run: test_run, sort: :type).to_s
+
+      lines = output.lines.map(&:rstrip)
+      type_lines = lines[3..5]
+      types_in_order = type_lines.map { |l| l.split("│")[1].strip }
+      expect(types_in_order).to eq(%w[model request system])
+    end
+
+    it "sorts by count descending when sort is :count" do
+      test_run = TestBudget::TestRun.new(
+        test_cases: [
+          build_test_case(file: "spec/models/user_spec.rb", duration: 2.0),
+          build_test_case(file: "spec/models/post_spec.rb", duration: 3.0),
+          build_test_case(file: "spec/system/login_spec.rb", duration: 50.0),
+          build_test_case(file: "spec/requests/api_spec.rb", duration: 10.0)
+        ],
+        wall_time: 65.0
+      )
+
+      output = described_class.new(test_run: test_run, sort: :count).to_s
+
+      lines = output.lines.map(&:rstrip)
+      type_lines = lines[3..5]
+      types_in_order = type_lines.map { |l| l.split("│")[1].strip }
+      expect(types_in_order).to eq(%w[model system request])
+    end
+
     it "handles irregular type names" do
       test_run = TestBudget::TestRun.new(
         test_cases: [

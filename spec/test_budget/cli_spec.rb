@@ -389,6 +389,28 @@ RSpec.describe TestBudget::CLI do
       end
     end
 
+    it "sorts alphabetically when --sort type is given" do
+      write_timings_file([
+        {"file_path" => "spec/models/user_spec.rb", "full_description" => "User is valid", "run_time" => 2.0, "status" => "passed"},
+        {"file_path" => "spec/system/login_spec.rb", "full_description" => "Login works", "run_time" => 50.0, "status" => "passed"},
+        {"file_path" => "spec/requests/api_spec.rb", "full_description" => "API responds", "run_time" => 10.0, "status" => "passed"}
+      ]) do |timings_path|
+        exit_code = nil
+        expect { exit_code = cli.call(["breakdown", "--sort", "type", timings_path]) }
+          .to output(/model.*request.*system/m).to_stdout
+
+        expect(exit_code).to eq(0)
+      end
+    end
+
+    it "returns 1 for invalid --sort value" do
+      exit_code = nil
+      expect { exit_code = cli.call(["breakdown", "--sort", "banana"]) }
+        .to output(/invalid argument: --sort banana/).to_stderr
+
+      expect(exit_code).to eq(1)
+    end
+
     it "returns 1 when timings file does not exist" do
       exit_code = nil
       expect { exit_code = cli.call(["breakdown", "nonexistent.json"]) }
