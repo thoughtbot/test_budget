@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.describe TestBudget::Breakdown do
+RSpec.describe TestBudget::TestRun::Breakdown do
   describe "#to_s" do
     it "groups test cases by type and sorts by duration descending" do
       test_run = TestBudget::TestRun.new(

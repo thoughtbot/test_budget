@@ -120,7 +120,7 @@ module TestBudget
     def run_breakdown(args)
       timings_path = args.shift || DEFAULT_TIMINGS_PATH
       test_run = Parser::Rspec.parse(timings_path)
-      puts Breakdown.new(test_run)
+      puts TestRun::Breakdown.new(test_run)
       0
     end
 
