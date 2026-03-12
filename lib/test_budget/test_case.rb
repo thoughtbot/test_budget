@@ -6,17 +6,11 @@ module TestBudget
       super(file: file.delete_prefix("./"), name: name, duration: duration, status: status, line_number: line_number)
     end
 
-    IRREGULAR_TYPES = {
-      "policies" => :policy,
-      "factories" => :factory,
-      "queries" => :query
-    }.freeze
-
     def type
       dir = file[%r{^spec/([^/]+)/}, 1]
       return :default unless dir
 
-      IRREGULAR_TYPES[dir] || dir.chomp("s").to_sym
+      Inflector.singularize(dir).to_sym
     end
 
     def key

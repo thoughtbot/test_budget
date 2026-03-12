@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative "test_budget/version"
+require_relative "test_budget/inflector"
 require_relative "test_budget/allowlist"
 require_relative "test_budget/test_case"
 require_relative "test_budget/violation"

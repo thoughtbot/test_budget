@@ -109,7 +109,7 @@ module TestBudget
       removed = Budget.load(budget_path).prune_allowlist
 
       if removed.any?
-        puts "#{removed.size} obsolete allowlist #{(removed.size == 1) ? "entry" : "entries"} removed"
+        puts "#{removed.size} obsolete allowlist #{Inflector.pluralize("entry", removed.size)} removed"
       else
         puts "No obsolete allowlist entries found"
       end
