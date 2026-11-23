@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-23
+
 - Add `diff` command to compare two test runs
 
 ```
@@ -30,6 +32,8 @@ $ bundle exec test_budget breakdown
 │ Total     │    50 │       │   6m 27s │       │
 └───────────┴───────┴───────┴──────────┴───────┘
 ```
+
+- Add `--sort` flag to `breakdown` command (`duration`, `count`, or `type`)
 
 ## [0.1.0] - 2026-03-09
 
